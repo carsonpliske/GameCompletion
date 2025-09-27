@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:howlongtobeat.com)",
+      "Bash(python:*)",
+      "Bash(npx http-server:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(npm search:*)",
+      "WebFetch(domain:codeberg.org)",
+      "WebFetch(domain:hltbapi.codepotatoes.de)",
+      "WebFetch(domain:howlongtobeatapi1.azurewebsites.net)",
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:chromewebstore.google.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(npm start)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:thegamesdb.net)",
+      "WebFetch(domain:cdn.thegamesdb.net)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(xargs ls:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

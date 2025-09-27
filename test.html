@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+    <style>
+        body { background: #1a252f; color: white; font-family: Arial; padding: 20px; }
+        .test-card { background: #2c3e50; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Debug Test Page</h1>
+    <div id="debug-info"></div>
+    <div id="test-games"></div>
+
+    <script>
+        console.log('Test script loading...');
+
+        // Test basic functionality
+        document.getElementById('debug-info').innerHTML = `
+            <div class="test-card">
+                <h3>Debug Info:</h3>
+                <p>Page loaded: ${new Date()}</p>
+                <p>Location: ${window.location.href}</p>
+            </div>
+        `;
+
+        // Test game rendering
+        const testGames = ['Rust', 'Counter-Strike 2', 'Terraria'];
+        const gamesContainer = document.getElementById('test-games');
+
+        testGames.forEach(game => {
+            const card = document.createElement('div');
+            card.className = 'test-card';
+            card.innerHTML = `
+                <div style="display: flex;">
+                    <div style="width: 60px; height: 60px; background: #34495e; margin-right: 10px; display: flex; align-items: center; justify-content: center;">🎮</div>
+                    <div>
+                        <div style="font-weight: bold;">${game}</div>
+                        <div style="color: #bdc3c7; font-size: 0.9rem;">Main Story: 25 hours</div>
+                    </div>
+                </div>
+            `;
+            gamesContainer.appendChild(card);
+        });
+
+        console.log('Test rendering complete');
+    </script>
+</body>
+</html>

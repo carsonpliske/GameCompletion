@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Game Rendering</title>
+    <style>
+        .game-card { border: 1px solid #ccc; margin: 10px; padding: 10px; }
+        .game-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Test Game Rendering</h1>
+    <div id="gamesList"></div>
+
+    <script src="manualGameData.js?v=3"></script>
+    <script src="hltbGameData.js?v=3"></script>
+    <script>
+        console.log('Starting test...');
+        console.log('gameDatabase exists:', typeof gameDatabase !== 'undefined');
+        console.log('gameDatabase keys count:', Object.keys(gameDatabase).length);
+
+        const gamesListContainer = document.getElementById('gamesList');
+        const games = Object.keys(gameDatabase).slice(0, 5); // Just first 5 games
+
+        console.log('Rendering first 5 games:', games);
+
+        games.forEach(gameName => {
+            const game = gameDatabase[gameName];
+            const gameCard = document.createElement('div');
+            gameCard.className = 'game-card';
+            gameCard.innerHTML = `
+                <div class="game-title">${game.title}</div>
+                <div>Time: ${game.timeToBeat || 'Unknown'} hours</div>
+            `;
+            gamesListContainer.appendChild(gameCard);
+        });
+
+        console.log('Rendering complete');
+    </script>
+</body>
+</html>

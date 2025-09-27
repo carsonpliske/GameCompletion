@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Game Organizer</title>
+</head>
+<body>
+    <h1>Debug Console</h1>
+    <div id="debug-output"></div>
+
+    <script src="manualGameData.js?v=3"></script>
+    <script src="hltbGameData.js?v=3"></script>
+    <script>
+        const debugDiv = document.getElementById('debug-output');
+
+        function log(message) {
+            debugDiv.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        log('Script started');
+        log('manualGameTimes exists: ' + (typeof manualGameTimes !== 'undefined'));
+        log('hltbGameTimes exists: ' + (typeof hltbGameTimes !== 'undefined'));
+        log('gameDatabase exists: ' + (typeof gameDatabase !== 'undefined'));
+
+        if (typeof gameDatabase !== 'undefined') {
+            log('gameDatabase keys count: ' + Object.keys(gameDatabase).length);
+            const firstGame = Object.keys(gameDatabase)[0];
+            if (firstGame) {
+                log('First game: ' + firstGame + ' = ' + JSON.stringify(gameDatabase[firstGame]));
+            }
+        }
+
+        if (typeof manualGameTimes !== 'undefined') {
+            log('manualGameTimes keys count: ' + Object.keys(manualGameTimes).length);
+        }
+
+        if (typeof hltbGameTimes !== 'undefined') {
+            log('hltbGameTimes keys count: ' + Object.keys(hltbGameTimes).length);
+        }
+    </script>
+</body>
+</html>

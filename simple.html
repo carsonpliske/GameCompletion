@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Game Organizer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a252f;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #bdc3c7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .search-container input::placeholder {
+            color: #95a5a6;
+        }
+
+        .sort-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sort-container select {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .games-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .game-card {
+            background: #2c3e50;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            border: 1px solid #34495e;
+            min-height: 120px;
+        }
+
+        .game-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .game-image {
+            width: 100px;
+            min-width: 100px;
+            background: #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #495057;
+            overflow: hidden;
+        }
+
+        .game-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .game-placeholder {
+            font-size: 2rem;
+            color: #7f8c8d;
+        }
+
+        .game-content {
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .game-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: white;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .game-stats {
+            margin-top: auto;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: #bdc3c7;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .stat-time {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Steam Game Organizer</h1>
+            <p>Sort your Steam games by time to beat</p>
+        </header>
+
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search games...">
+            </div>
+            <div class="sort-container">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect">
+                    <option value="name">Name (A-Z)</option>
+                    <option value="timeAsc">Time to Beat (Shortest)</option>
+                    <option value="timeDesc">Time to Beat (Longest)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Total Games:</span>
+                <span id="totalGames">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Filtered:</span>
+                <span id="filteredGames">0</span>
+            </div>
+        </div>
+
+        <div id="gamesList" class="games-list">
+            <!-- Games will be populated here -->
+        </div>
+    </div>
+
+    <script src="hltbGameData.js"></script>
+    <script>
+        console.log('Simple page loading...');
+
+        // Complete games list from script.js (629 games total)
+        const gamesList = [
+            "Rust", "LOCKDOWN Protocol", "Counter-Strike 2", "Call of Duty®", "Crab Game",
+            "Call of Duty: Black Ops II - Multiplayer", "Stardew Valley", "Terraria", "Wallpaper Engine",
+            "Call of Duty: Black Ops III", "The Witcher 3: Wild Hunt", "Marvel Rivals", "Fall Guys",
+            "The Witcher: Enhanced Edition", "Call of Duty: Black Ops II - Zombies", "Raft", "Borderlands 2",
+            "Call of Duty: Black Ops", "South Park The Fractured But Whole", "MultiVersus",
+            "Call of Duty: World at War", "Call of Duty 4: Modern Warfare (2007)", "Call of Duty: Black Ops II",
+            "Garry's Mod", "Cyberpunk 2077", "South Park™: The Stick of Truth™", "Among Us", "Deceit",
+            "Overwatch® 2", "LEGO® Star Wars™: The Complete Saga", "The Witcher 2: Assassins of Kings Enhanced Edition",
+            "Borderlands GOTY", "Slime Rancher", "Assassin's Creed II", "Lethal Company", "Don't Starve Together",
+            "Portal 2", "Call of Duty: Modern Warfare 2 (2009)", "Assassin's Creed", "Call of Duty®: Modern Warfare® 3 (2011)",
+            "Destroy All Humans!", "Palworld", "The Forest", "Marvel's Spider-Man Remastered", "Mad Max",
+            "Dungeon Defenders II", "Castle Crashers", "The Walking Dead", "Life is Strange 2", "Life is Strange™",
+            // Batch 2 games (51-100)
+            "Cookie Clicker", "PUBG: BATTLEGROUNDS", "Unturned", "Call of Duty®: Modern Warfare® II - Open Beta",
+            "Life is Strange: Before the Storm", "It Takes Two", "Blood and Bacon", "Quake Champions",
+            "Detroit: Become Human", "The Walking Dead: A New Frontier", "House Party", "The Walking Dead: Season Two",
+            "INSIDE", "The Quarry", "Golf With Your Friends", "Far Cry", "Portal", "HELLDIVERS™ 2",
+            "A Way Out", "Phasmophobia", "Clustertruck", "Human Fall Flat", "Call of Duty: WWII - Multiplayer",
+            "Call of Duty 2", "ARK: Survival Evolved", "LIMBO", "Chained Together", "Assassin's Creed Brotherhood",
+            "Hello Neighbor", "Call of Duty (2003)", "Call of Duty: United Offensive", "Grand Theft Auto V Legacy",
+            "Apex Legends", "Portal with RTX", "BattleBlock Theater", "STAR WARS Jedi: Fallen Order™",
+            "Call of Duty: Infinite Warfare", "Half-Life", "Comedy Night", "Call of Duty: Ghosts", "PEAK",
+            "BioShock", "Borderlands GOTY Enhanced", "Tom Clancy's Rainbow Six® Siege X",
+            "Plants vs. Zombies™ Garden Warfare 2: Deluxe Edition", "Escape Memoirs: Mini Stories",
+            "LEGO® Batman™: The Videogame", "Shower With Your Dad Simulator 2015: Do You Still Shower With Your Dad", "Far Cry 2"
+        ];
+
+        // TheGamesDB IDs for images (much better consistency)
+        const gamesDbIds = {
+            "Borderlands 2": { id: 5647, ext: "jpg" },
+            "Rust": { id: 19092, ext: "png" },
+            "Counter-Strike 2": { id: 130794, ext: "jpg" },
+            "Terraria": { id: 2642, ext: "jpg" },
+            "Stardew Valley": { id: 35320, ext: "png" },
+            "The Witcher 3: Wild Hunt": { id: 33255, ext: "jpg" },
+            "Cyberpunk 2077": { id: 14517, ext: "jpg" },
+            "Portal 2": { id: 914, ext: "jpg" },
+            "Portal": { id: 158, ext: "jpg" },
+            "Half-Life": { id: 647, ext: "jpg" },
+            "Garry's Mod": { id: 8506, ext: "jpg" },
+            "Fall Guys": { id: 76338, ext: "jpg" },
+            "Among Us": { id: 77267, ext: "jpg" },
+            "Grand Theft Auto V": { id: 20952, ext: "jpg" },
+            "Palworld": { id: 101359, ext: "jpg" },
+            "Marvel Rivals": { id: 130296, ext: "jpg" },
+            "Phasmophobia": { id: 78978, ext: "jpg" },
+            "Lethal Company": { id: 121083, ext: "jpg" },
+            "Don't Starve Together": { id: 29821, ext: "jpg" },
+            // New batch 1 additions
+            "Crab Game": { id: 95562, ext: "jpg" },
+            "Raft": { id: 61470, ext: "jpg" },
+            "Overwatch® 2": { id: 105447, ext: "jpg" },
+            "Slime Rancher": { id: 106429, ext: "jpg" },
+            "Assassin's Creed II": { id: 318, ext: "jpg" },
+            "The Forest": { id: 20754, ext: "jpg" },
+            "Mad Max": { id: 31182, ext: "jpg" },
+            "Castle Crashers": { id: 11687, ext: "jpg" },
+            "The Walking Dead": { id: 9714, ext: "jpg" },
+            "Life is Strange 2": { id: 60002, ext: "jpg" },
+            "Life is Strange™": { id: 25440, ext: "jpg" },
+            // Additional missing games
+            "MultiVersus": { id: 102151, ext: "jpg" },
+            "Deceit": { id: 61460, ext: "jpg" },
+            "Destroy All Humans!": { id: 76343, ext: "jpg" },
+            // Final Batch 1 additions
+            "Call of Duty: Black Ops II": { id: 9935, ext: "jpg" },
+            "Call of Duty: Modern Warfare 2 (2009)": { id: 152, ext: "jpg" },
+            "Call of Duty: Black Ops II - Zombies": { id: 16130, ext: "jpg" },
+            // Batch 2 additions (games 51-100)
+            "PUBG: BATTLEGROUNDS": { id: 116371, ext: "jpg" },
+            "It Takes Two": { id: 85017, ext: "jpg" },
+            "Detroit: Become Human": { id: 48142, ext: "jpg" },
+            "INSIDE": { id: 42073, ext: "jpg" },
+            "The Quarry": { id: 98784, ext: "jpg" },
+            "Golf With Your Friends": { id: 61482, ext: "jpg" },
+            "Far Cry": { id: 769, ext: "jpg" },
+            "Portal": { id: 158, ext: "jpg" },
+            "HELLDIVERS™ 2": { id: 123997, ext: "jpg" },
+            "A Way Out": { id: 53804, ext: "jpg" },
+            "Phasmophobia": { id: 78978, ext: "jpg" },
+            "Human Fall Flat": { id: 80400, ext: "jpg" },
+            "ARK: Survival Evolved": { id: 28903, ext: "jpg" },
+            "LIMBO": { id: 5950, ext: "jpg" },
+            "Assassin's Creed Brotherhood": { id: 1802, ext: "jpg" },
+            "Hello Neighbor": { id: 46755, ext: "jpg" },
+            "Grand Theft Auto V": { id: 20952, ext: "jpg" },
+            "Apex Legends": { id: 63342, ext: "jpg" },
+            "BattleBlock Theater": { id: 21964, ext: "png" },
+            "STAR WARS Jedi: Fallen Order™": { id: 87435, ext: "jpg" },
+            "Half-Life": { id: 647, ext: "jpg" },
+            "BioShock": { id: 13, ext: "jpg" },
+            "Tom Clancy's Rainbow Six® Siege X": { id: 95032, ext: "jpg" },
+            "LEGO® Batman™: The Videogame": { id: 7515, ext: "jpg" },
+            "Far Cry 2": { id: 770, ext: "jpg" }
+        };
+
+        // Steam App IDs for images (fallback)
+        const steamAppIds = {
+            "Counter-Strike 2": 730,
+            "Terraria": 105600,
+            "Stardew Valley": 413150,
+            "The Witcher 3: Wild Hunt": 292030,
+            "Cyberpunk 2077": 1091500,
+            "Portal 2": 620,
+            "Portal": 400,
+            "Half-Life": 70,
+            "Garry's Mod": 4000,
+            "Fall Guys": 1097150,
+            "Among Us": 945360,
+            "Call of Duty: Black Ops III": 311210,
+            "Grand Theft Auto V": 271590,
+            "Palworld": 1623730,
+            "Marvel Rivals": 2767030,
+            // Additional Steam IDs for better coverage
+            "LOCKDOWN Protocol": 1794270,
+            "Call of Duty®": 2620,
+            "Call of Duty: Black Ops II - Multiplayer": 202990,
+            "MultiVersus": 1818750,
+            "South Park™: The Stick of Truth™": 213670,
+            "South Park The Fractured But Whole": 488790,
+            "Call of Duty 4: Modern Warfare (2007)": 7940,
+            "Deceit": 466240,
+            "Borderlands GOTY": 8980,
+            "Assassin's Creed": 15100,
+            "Call of Duty®: Modern Warfare® 3 (2011)": 115300,
+            "The Witcher 2: Assassins of Kings Enhanced Edition": 20920,
+            "LEGO® Star Wars™: The Complete Saga": 32440,
+            "Call of Duty: World at War": 10090,
+            "Call of Duty: Black Ops": 42700,
+            "The Witcher: Enhanced Edition": 20900,
+            "Dungeon Defenders II": 236110,
+            "Marvel's Spider-Man Remastered": 1817070,
+            // Final Batch 1 Steam fallback
+            "Wallpaper Engine": 431960,
+            // Batch 2 Steam App IDs (games 51-100)
+            "Life is Strange™": 319630,
+            "Cookie Clicker": 1454400,
+            "PUBG: BATTLEGROUNDS": 578080,
+            "Unturned": 304930,
+            "Call of Duty®: Modern Warfare® II - Open Beta": 2000950,
+            "Life is Strange: Before the Storm": 554620,
+            "It Takes Two": 1426210,
+            "Blood and Bacon": 434570,
+            "Quake Champions": 611500,
+            "Detroit: Become Human": 1222140,
+            "The Walking Dead: A New Frontier": 536220,
+            "House Party": 611790,
+            "The Walking Dead: Season Two": 261030,
+            "INSIDE": 304430,
+            "The Quarry": 1577120,
+            "Golf With Your Friends": 431240,
+            "Far Cry": 13520,
+            "Portal": 400,
+            "HELLDIVERS™ 2": 553850,
+            "A Way Out": 1222700,
+            "Phasmophobia": 739630,
+            "Clustertruck": 397950,
+            "Human Fall Flat": 477160,
+            "Call of Duty: WWII - Multiplayer": 476620,
+            "Call of Duty 2": 2630,
+            "ARK: Survival Evolved": 346110,
+            "LIMBO": 48000,
+            "Chained Together": 2567870,
+            "Assassin's Creed Brotherhood": 48190,
+            "Hello Neighbor": 521890,
+            "Call of Duty: United Offensive": 2640,
+            "Apex Legends": 1172470,
+            "Portal with RTX": 2012840,
+            "BattleBlock Theater": 238460,
+            "STAR WARS Jedi: Fallen Order™": 1172380,
+            "Call of Duty: Infinite Warfare": 292730,
+            "Half-Life": 70,
+            "Comedy Night": 665360,
+            "Call of Duty: Ghosts": 209160,
+            "PEAK": 3527290,
+            "BioShock": 7670,
+            "Borderlands GOTY Enhanced": 729040,
+            "Tom Clancy's Rainbow Six® Siege X": 359550,
+            "Plants vs. Zombies™ Garden Warfare 2: Deluxe Edition": 1922560,
+            "Escape Memoirs: Mini Stories": 2098350,
+            "LEGO® Batman™: The Videogame": 21000,
+            "Shower With Your Dad Simulator 2015: Do You Still Shower With Your Dad": 359050,
+            "Far Cry 2": 19900
+        };
+
+        function getGameImageUrl(gameName) {
+            // Try TheGamesDB first (better quality and consistency)
+            const gamesDbData = gamesDbIds[gameName];
+            if (gamesDbData) {
+                return `https://cdn.thegamesdb.net/images/thumb/boxart/front/${gamesDbData.id}-1.${gamesDbData.ext}`;
+            }
+
+            // Fallback to Steam images
+            const steamAppId = steamAppIds[gameName];
+            if (steamAppId) {
+                return `https://cdn.akamai.steamstatic.com/steam/apps/${steamAppId}/capsule_184x69.jpg`;
+            }
+
+            return null;
+        }
+
+        function createImageWithFallback(imageUrl, gameName) {
+            if (!imageUrl) {
+                return '<div class="game-placeholder">🎮</div>';
+            }
+
+            // For TheGamesDB images, try both jpg and png if first fails
+            const gamesDbData = gamesDbIds[gameName];
+            if (gamesDbData) {
+                const primaryUrl = imageUrl;
+                const alternateExt = gamesDbData.ext === 'jpg' ? 'png' : 'jpg';
+                const fallbackUrl = `https://cdn.thegamesdb.net/images/thumb/boxart/front/${gamesDbData.id}-1.${alternateExt}`;
+
+                return `<img src="${primaryUrl}" alt="${gameName}"
+                    onerror="this.onerror=null; this.src='${fallbackUrl}';
+                    this.onerror=function(){this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>🎮</div>';}">`;
+            }
+
+            // For Steam images, just use basic fallback
+            return `<img src="${imageUrl}" alt="${gameName}" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>🎮</div>'">`;
+        }
+
+        function formatTime(hours) {
+            if (!hours) return 'Unknown';
+            if (hours < 1) return `${Math.round(hours * 60)} minutes`;
+            return `${hours} hours`;
+        }
+
+        function renderGames() {
+            const container = document.getElementById('gamesList');
+            const totalSpan = document.getElementById('totalGames');
+            const filteredSpan = document.getElementById('filteredGames');
+
+            container.innerHTML = '';
+
+            gamesList.forEach(gameName => {
+                const hltbTime = window.hltbGameTimes ? window.hltbGameTimes[gameName] : null;
+                const imageUrl = getGameImageUrl(gameName);
+
+                const card = document.createElement('div');
+                card.className = 'game-card';
+
+                const imageHtml = createImageWithFallback(imageUrl, gameName);
+
+                card.innerHTML = `
+                    <div class="game-image">
+                        ${imageHtml}
+                    </div>
+                    <div class="game-content">
+                        <div class="game-title">${gameName}</div>
+                        <div class="game-stats">
+                            <div class="stat-row">
+                                <span class="stat-label">Main Story</span>
+                                <span class="stat-time">${formatTime(hltbTime)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            totalSpan.textContent = gamesList.length;
+            filteredSpan.textContent = gamesList.length;
+        }
+
+        // Debug logging
+        console.log('HLTB data available:', !!window.hltbGameTimes);
+        console.log('Sample HLTB data:', window.hltbGameTimes ? Object.keys(window.hltbGameTimes).slice(0, 5) : 'None');
+
+        // Wait for page to load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, rendering games...');
+            console.log('Games list length:', gamesList.length);
+            console.log('TheGamesDB IDs count:', Object.keys(gamesDbIds).length);
+            renderGames();
+        });
+
+        // Fallback in case DOMContentLoaded already fired
+        if (document.readyState === 'loading') {
+            // Do nothing, DOMContentLoaded will fire
+        } else {
+            console.log('DOM already ready, rendering games immediately...');
+            renderGames();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Date Processor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .container {
+            background-color: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            background-color: #333;
+            border-radius: 4px;
+            padding: 3px;
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            background-color: #4CAF50;
+            height: 20px;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .game-result {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            margin: 4px 0;
+            background-color: #333;
+            border-radius: 4px;
+        }
+
+        .game-result.found {
+            background-color: #2d4a2d;
+        }
+
+        .game-result.not-found {
+            background-color: #4a2d2d;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .found { color: #4CAF50; }
+        .not-found { color: #f44336; }
+
+        pre {
+            background-color: #222;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        .batch-info {
+            background-color: #1a3366;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Game Release Date Processor</h1>
+
+    <div class="batch-info">
+        <h2>Batch 1 - First 20 Games (A-Z)</h2>
+        <p>Processing games alphabetically using RAWG API</p>
+        <p><strong>Rate limit:</strong> 500ms delay between requests</p>
+    </div>
+
+    <div class="container">
+        <h3>Controls</h3>
+        <button id="startBtn" onclick="startFetch()">Start Batch Processing</button>
+        <button id="exportBtn" onclick="exportResults()" disabled>Export Results</button>
+        <button onclick="clearResults()">Clear Results</button>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div id="status">Ready to start processing...</div>
+    </div>
+
+    <div class="container">
+        <h3>Live Results</h3>
+        <div id="results"></div>
+    </div>
+
+    <div class="container">
+        <h3>Console Output</h3>
+        <pre id="console"></pre>
+    </div>
+
+    <script src="releaseDateFetcher.js"></script>
+    <script>
+        let currentResults = [];
+        let isProcessing = false;
+
+        // Override console.log to capture output
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+
+            const consoleEl = document.getElementById('console');
+            const message = args.join(' ') + '\n';
+            consoleEl.textContent += message;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        };
+
+        async function startFetch() {
+            if (isProcessing) return;
+
+            isProcessing = true;
+            const startBtn = document.getElementById('startBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const resultsDiv = document.getElementById('results');
+            const statusDiv = document.getElementById('status');
+            const progressBar = document.getElementById('progressBar');
+
+            startBtn.disabled = true;
+            exportBtn.disabled = true;
+            resultsDiv.innerHTML = '';
+            currentResults = [];
+
+            console.log('🚀 Starting batch processing...');
+            statusDiv.textContent = 'Processing games...';
+
+            try {
+                const fetcher = new ReleaseDateFetcher();
+                const totalGames = firstBatch.length;
+
+                for (let i = 0; i < totalGames; i++) {
+                    const gameName = firstBatch[i];
+                    statusDiv.textContent = `Processing ${i + 1}/${totalGames}: ${gameName}`;
+
+                    const result = await fetcher.fetchReleaseDate(gameName);
+                    currentResults.push(result);
+
+                    // Update progress bar
+                    const progress = ((i + 1) / totalGames) * 100;
+                    progressBar.style.width = progress + '%';
+
+                    // Add result to display
+                    addResultToDisplay(result);
+
+                    // Delay between requests (except for last one)
+                    if (i < totalGames - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+
+                console.log('\n✅ Batch processing complete!');
+                statusDiv.textContent = `Completed! Processed ${totalGames} games.`;
+
+                // Show summary
+                const found = currentResults.filter(r => r.year).length;
+                console.log(`📊 Summary: Found release dates for ${found}/${totalGames} games`);
+
+                exportBtn.disabled = false;
+
+            } catch (error) {
+                console.error('❌ Error during processing:', error);
+                statusDiv.textContent = 'Error occurred during processing.';
+            } finally {
+                startBtn.disabled = false;
+                isProcessing = false;
+            }
+        }
+
+        function addResultToDisplay(result) {
+            const resultsDiv = document.getElementById('results');
+            const resultEl = document.createElement('div');
+
+            const found = result.year !== null;
+            const statusText = found ? `${result.year}` : 'Unknown';
+            const statusClass = found ? 'found' : 'not-found';
+            const matchIcon = result.exactMatch ? '✓' : '~';
+
+            resultEl.className = `game-result ${statusClass}`;
+            resultEl.innerHTML = `
+                <span>${matchIcon} ${result.name}</span>
+                <span class="status ${statusClass}">${statusText}</span>
+            `;
+
+            resultsDiv.appendChild(resultEl);
+        }
+
+        function exportResults() {
+            if (currentResults.length === 0) {
+                alert('No results to export');
+                return;
+            }
+
+            // Create export data
+            const exportData = {
+                batchNumber: 1,
+                processed: new Date().toISOString(),
+                totalGames: currentResults.length,
+                foundDates: currentResults.filter(r => r.year).length,
+                games: currentResults
+            };
+
+            // Download as JSON
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'batch1_release_dates.json';
+            link.click();
+
+            URL.revokeObjectURL(url);
+
+            console.log('📁 Results exported as batch1_release_dates.json');
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('console').textContent = '';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('status').textContent = 'Ready to start processing...';
+            currentResults = [];
+            document.getElementById('exportBtn').disabled = true;
+        }
+
+        // Display first batch info on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('First 20 games to process:');
+            firstBatch.forEach((game, i) => {
+                console.log(`${i + 1}. ${game}`);
+            });
+            console.log('\nReady to start processing. Click "Start Batch Processing" to begin.');
+        });
+    </script>
+</body>
+</html>
