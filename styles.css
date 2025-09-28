@@ -130,6 +130,12 @@ header p {
     overflow: hidden;
 }
 
+.game-image-container {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #495057;
+}
+
 .game-image {
     width: 140px;
     min-width: 140px;
@@ -138,7 +144,6 @@ header p {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-right: 1px solid #495057;
     overflow: hidden;
 }
 
@@ -344,4 +349,26 @@ header p {
     .games-list {
         grid-template-columns: 1fr;
     }
+}
+
+/* Achievement Badge Styles */
+.achievement-badge {
+    width: 140px;
+    padding: 2px 0;
+    font-size: 0.75rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    text-align: center;
+}
+
+.achievement-icon {
+    font-size: 0.8rem;
+}
+
+.achievement-count {
+    font-size: 0.75rem;
+    line-height: 1;
 }

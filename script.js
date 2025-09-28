@@ -2204,9 +2204,20 @@ function renderGames() {
             ? `<img src="${steamUrl}" alt="${game.title}" onerror="this.onerror=null; this.src='${fallbackUrl}'; this.onerror=function(){this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>';}">`
             : `<img src="${fallbackUrl}" alt="${game.title}" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>'">`;
 
+        // Get achievement data
+        const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
+
         gameCard.innerHTML = `
-            <div class="game-image">
-                ${imageHtml}
+            <div class="game-image-container" onclick="openSteamStore('${game.title}')" style="cursor: pointer;" title="View on Steam Store">
+                <div class="game-image">
+                    ${imageHtml}
+                </div>
+                ${achievementData.hasAchievements ? `
+                    <div class="achievement-badge" title="Steam Achievements: ${achievementData.count}">
+                        <span class="achievement-icon">🏆</span>
+                        <span class="achievement-count">${achievementData.count}</span>
+                    </div>
+                ` : ''}
             </div>
             <div class="game-content">
                 <div class="game-header">
@@ -2331,6 +2342,36 @@ function sortGames() {
                 if (!gameB.releaseYear) return -1;
 
                 return yearB2 - yearA2;
+
+            case 'achievementsDesc':
+                // Get achievement data for both games
+                const achieveDataA = getAchievementData(gameA.title);
+                const achieveDataB = getAchievementData(gameB.title);
+                const achieveCountA = achieveDataA.hasAchievements ? achieveDataA.count : 0;
+                const achieveCountB = achieveDataB.hasAchievements ? achieveDataB.count : 0;
+
+                // Sort by achievement count, highest first
+                // Games without achievements go to the end
+                if (achieveCountA === 0 && achieveCountB === 0) return 0;
+                if (achieveCountA === 0) return 1;
+                if (achieveCountB === 0) return -1;
+
+                return achieveCountB - achieveCountA;
+
+            case 'achievementsAsc':
+                // Get achievement data for both games
+                const achieveDataA2 = getAchievementData(gameA.title);
+                const achieveDataB2 = getAchievementData(gameB.title);
+                const achieveCountA2 = achieveDataA2.hasAchievements ? achieveDataA2.count : 0;
+                const achieveCountB2 = achieveDataB2.hasAchievements ? achieveDataB2.count : 0;
+
+                // Sort by achievement count, lowest first
+                // Games without achievements go to the end
+                if (achieveCountA2 === 0 && achieveCountB2 === 0) return 0;
+                if (achieveCountA2 === 0) return 1;
+                if (achieveCountB2 === 0) return -1;
+
+                return achieveCountA2 - achieveCountB2;
 
             default:
                 return 0;
@@ -2466,6 +2507,17 @@ function debugSorting() {
             console.log(`Found: ${gameName} → ${game.title}: ${game.timeToBeat} hours`);
         }
     });
+}
+
+// Function to open Steam store page for a game
+function openSteamStore(gameTitle) {
+    const steamAppId = steamAppIds[gameTitle];
+    if (steamAppId) {
+        const steamStoreUrl = `https://store.steampowered.com/app/${steamAppId}`;
+        window.open(steamStoreUrl, '_blank');
+    } else {
+        console.log(`No Steam app ID found for: ${gameTitle}`);
+    }
 }
 
 // Add debug buttons (only in development)
