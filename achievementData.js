@@ -194,6 +194,7 @@ const steamAchievements = {
     "The Crew 2": { hasAchievements: true, count: 34 },
     "Friday the 13th: The Game": { hasAchievements: true, count: 53 },
     "Frostpunk": { hasAchievements: true, count: 115 },
+    "Garfield Kart - Furious Racing": { hasAchievements: true, count: 14 },
     "THE GAME OF LIFE": { hasAchievements: true, count: 10 },
     "Geometry Dash": { hasAchievements: true, count: 120 },
     "Getting Over It with Bennett Foddy": { hasAchievements: true, count: 3 },
@@ -334,6 +335,7 @@ const steamAchievements = {
     "BioShock Remastered": { hasAchievements: true, count: 65 }, // ~8 hours
     "Outlast": { hasAchievements: true, count: 14 }, // ~8 hours
     "Outlast 2": { hasAchievements: true, count: 24 }, // ~10 hours
+    "PAYDAY 2": { hasAchievements: true, count: 1328 }, // ~13 hours
     "Alien: Isolation": { hasAchievements: true, count: 50 }, // ~12 hours
     "Mad Max": { hasAchievements: true, count: 49 }, // ~12 hours
 
@@ -448,8 +450,6 @@ const steamAchievements = {
     "Mafia": { hasAchievements: false, count: 0 }, // ~15 hours - No stats available
     "Mafia II (Classic)": { hasAchievements: true, count: 67 }, // ~16 hours
     "Mafia: Definitive Edition": { hasAchievements: true, count: 43 }, // ~15 hours
-    "Mafia III: Definitive Edition": { hasAchievements: false, count: 0 }, // ~17 hours - No stats available
-    "Mafia II: Definitive Edition": { hasAchievements: false, count: 0 }, // ~16 hours - No stats available
     "Saints Row 2": { hasAchievements: false, count: 0 }, // ~16 hours - No stats available
     "Saints Row: The Third": { hasAchievements: true, count: 83 }, // ~17 hours
     "Saints Row IV": { hasAchievements: true, count: 73 }, // ~18 hours
@@ -478,7 +478,7 @@ const steamAchievements = {
 
     // Batch 16 - Additional games from user's collection (Mixed completion times)
     "The Evil Within": { hasAchievements: true, count: 51 }, // ~20 hours
-    "The Evil Within 2": { hasAchievements: false, count: 0 }, // ~18 hours - No stats available
+    "The Evil Within 2": { hasAchievements: true, count: 51 }, // ~18 hours
     "S.T.A.L.K.E.R.: Shadow of Chernobyl": { hasAchievements: false, count: 0 }, // ~20 hours - No stats available
     "S.T.A.L.K.E.R.: Clear Sky": { hasAchievements: false, count: 0 }, // ~18 hours - No stats available
     "S.T.A.L.K.E.R.: Call of Pripyat": { hasAchievements: false, count: 0 }, // ~20 hours - No stats available
@@ -520,7 +520,6 @@ const steamAchievements = {
     "Marvel Rivals": { hasAchievements: true, count: 49 }, // ~Variable hours
 
     // Batch 17 - Continuing sequential order by completion time (30+ hours)
-    "Crusader Kings II": { hasAchievements: false, count: 0 }, // ~50+ hours - No stats available
     "Alan Wake 2": { hasAchievements: true, count: 39 }, // ~16 hours
 
     // Batch 18 - More games from collection (Mixed completion times)
@@ -537,8 +536,6 @@ const steamAchievements = {
     "Assassin's Creed II": { hasAchievements: false, count: 0 }, // ~18 hours - No stats available
     "Assassin's Creed": { hasAchievements: false, count: 0 }, // ~15 hours - No stats available
     "Assassin's Creed Brotherhood": { hasAchievements: false, count: 0 }, // ~18 hours - No stats available
-    "Mafia III: Definitive Edition": { hasAchievements: false, count: 0 }, // ~20 hours - No stats available
-    "Mafia II: Definitive Edition": { hasAchievements: false, count: 0 }, // ~18 hours - No stats available
 
     // Continue Batch 18 - More verified games from collection
     "Tom Clancy's EndWar": { hasAchievements: false, count: 0 }, // ~15 hours - No stats available
@@ -588,7 +585,6 @@ const steamAchievements = {
     "Counter-Strike: Condition Zero Deleted Scenes": { hasAchievements: false, count: 0 }, // ~4 hours - No stats available
 
     // Continue Batch 19 - Adding more games to reach 80 total
-    "Until Dawn™": { hasAchievements: false, count: 0 }, // ~10 hours - No stats available
     "The Quarry": { hasAchievements: true, count: 40 }, // ~10 hours
     "Dead Space (2008)": { hasAchievements: true, count: 47 }, // ~12 hours
     "Dead Space 2": { hasAchievements: false, count: 0 }, // ~12 hours - No stats available
@@ -776,7 +772,6 @@ const steamAchievements = {
     "Lethal Company": { hasAchievements: false, count: 0 }, // ~22 hours (no Steam achievements)
     "Call of Duty®: Modern Warfare® II": { hasAchievements: true, count: 24 }, // ~22 hours
     "EARTH DEFENSE FORCE 5": { hasAchievements: true, count: 36 }, // ~22 hours
-    "It Takes Two": { hasAchievements: false, count: 0 }, // ~22 hours (no Steam achievements)
     "Stardew Valley": { hasAchievements: true, count: 49 }, // ~22 hours
     "Overwatch® 2": { hasAchievements: true, count: 164 }, // ~23 hours
     "BIOMUTANT": { hasAchievements: false, count: 0 }, // ~23 hours (no Steam achievements)
