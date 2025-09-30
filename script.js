@@ -1007,7 +1007,7 @@ const steamAppIds = {
     "Portal with RTX": 2012840,
     "Call of Duty: Infinite Warfare": 292730,
     "Call of Duty: Ghosts": 209160,
-    "PEAK": 3527290,
+    "PEAK": "peak.jpg",
     "Tom Clancy's Rainbow Six Siege": 359550,
     "Plants vs. Zombies™ Garden Warfare 2: Deluxe Edition": 1922560,
     "Escape Memoirs: Mini Stories": 2098350,
@@ -1021,7 +1021,7 @@ const steamAppIds = {
     "Dungeon Defenders": 65800,
     "Pacify": 967050,
     "NBA 2K24": 2338770,
-    "Mage Arena": 3716600,
+    "Mage Arena": "mageArena.jpg",
     "Halo: The Master Chief Collection": 976730,
     "Lara Croft GO": 540840,
     "Call of Duty: Advanced Warfare - Multiplayer": 209650,
@@ -1456,6 +1456,11 @@ function getSteamAppId(gameName) {
 function getSteamImageUrl(appId, type = 'header') {
     if (!appId) return null;
 
+    // If it's a local file (ends with .jpg, .png, etc.), return it as-is
+    if (typeof appId === 'string' && appId.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        return appId;
+    }
+
     // Steam CDN image URLs
     switch(type) {
         case 'header':
@@ -1858,7 +1863,7 @@ const completionistTimes = {
     "Mafia II (Classic)": 32,
     "Mafia II: Definitive Edition": 34.5,
     "Mafia III: Definitive Edition": 70,
-    "Mage Arena": 3716600,
+    "Mage Arena": "mageArena.jpg",
     "Marvel Rivals": 56,
     "Marvel vs. Capcom: Infinite": 12,
     "Marvel's Avengers - The Definitive Edition": 105,
