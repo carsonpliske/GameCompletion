@@ -1044,7 +1044,7 @@ const steamAppIds = {
     "SpeedRunners": 207140,
     "Call of Duty: Advanced Warfare": 209650,
     "Call of Duty: Modern Warfare 3 (2011) - Multiplayer": 42750,
-    "Rust - Staging Branch": 258550,
+    "Rust - Staging Branch": 700580,
     "Adventure Time: Pirates of the Enchiridion": 819500,
     "Alan Wake's American Nightmare": 202750,
     "Alice: Madness Returns": 19680,
