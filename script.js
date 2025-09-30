@@ -1863,7 +1863,7 @@ const completionistTimes = {
     "Mafia II (Classic)": 32,
     "Mafia II: Definitive Edition": 34.5,
     "Mafia III: Definitive Edition": 70,
-    "Mage Arena": "mageArena.jpg",
+    "Mage Arena": "Unknown",
     "Marvel Rivals": 56,
     "Marvel vs. Capcom: Infinite": 12,
     "Marvel's Avengers - The Definitive Edition": 105,
