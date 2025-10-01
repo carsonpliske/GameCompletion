@@ -2482,11 +2482,122 @@ function updateGameCardVisuals(gameTitle, isCompleted) {
         if (titleElement && titleElement.textContent === gameTitle) {
             if (isCompleted) {
                 card.classList.add('game-completed');
+
+                // Trigger celebration animation
+                card.classList.add('celebrating');
+                setTimeout(() => {
+                    card.classList.remove('celebrating');
+                }, 1500);
+
+                // Launch confetti from the card position
+                const rect = card.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                launchConfetti(centerX, centerY);
+
+                // Show toast notification
+                showToast(gameTitle);
             } else {
                 card.classList.remove('game-completed');
             }
         }
     });
+}
+
+// Screen shake effect
+function triggerScreenShake() {
+    document.body.classList.add('shake');
+    setTimeout(() => {
+        document.body.classList.remove('shake');
+    }, 500);
+}
+
+// Toast notification
+function showToast(gameTitle) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `🎮 ${gameTitle} Completed!`;
+    document.body.appendChild(toast);
+
+    // Remove toast after animation completes
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Trophy celebration effect
+function launchConfetti(originX, originY) {
+    const canvas = document.getElementById('confetti-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const trophyCount = 15;
+    const trophies = [];
+
+    // Create trophy pieces
+    for (let i = 0; i < trophyCount; i++) {
+        const angle = (Math.PI * 2 * i) / trophyCount + (Math.random() - 0.5) * 0.5;
+        const velocity = 4 + Math.random() * 7;
+
+        trophies.push({
+            x: originX,
+            y: originY,
+            vx: Math.cos(angle) * velocity,
+            vy: Math.sin(angle) * velocity - Math.random() * 5,
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 15,
+            size: 24,
+            gravity: 0.4,
+            opacity: 1
+        });
+    }
+
+    let frameCount = 0;
+    const maxFrames = 120;
+
+    function animate() {
+        frameCount++;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Update and draw trophies
+        trophies.forEach(trophy => {
+            // Update position
+            trophy.x += trophy.vx;
+            trophy.y += trophy.vy;
+            trophy.vy += trophy.gravity;
+            trophy.rotation += trophy.rotationSpeed;
+
+            // Fade out towards the end
+            if (frameCount > maxFrames - 40) {
+                trophy.opacity -= 0.025;
+            }
+
+            // Draw trophy
+            ctx.save();
+            ctx.translate(trophy.x, trophy.y);
+            ctx.rotate((trophy.rotation * Math.PI) / 180);
+            ctx.globalAlpha = Math.max(0, trophy.opacity);
+            ctx.font = `${trophy.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🏆', 0, 0);
+            ctx.restore();
+        });
+
+        // Continue animation
+        if (frameCount < maxFrames) {
+            requestAnimationFrame(animate);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    requestAnimationFrame(animate);
 }
 
 function getCompletedGamesCount() {
