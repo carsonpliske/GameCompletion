@@ -25,7 +25,19 @@
       "Bash(xargs ls:*)",
       "Bash(git init:*)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:store.steampowered.com)",
+      "WebFetch(domain:steamcommunity.com)",
+      "WebFetch(domain:steamhunters.com)",
+      "WebFetch(domain:127.0.0.1)",
+      "WebFetch(domain:localhost)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(git log:*)",
+      "WebFetch(domain:steamdb.info)"
     ],
     "deny": [],
     "ask": []

@@ -1,3 +1,6 @@
+// Kill switch for floating background images
+const ENABLE_FLOATING_BACKGROUNDS = true;
+
 const gamesList = [
     "Rust",
     "LOCKDOWN Protocol",
@@ -2591,3 +2594,65 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     sortingButton.onclick = debugSorting;
     document.body.appendChild(sortingButton);
 }
+
+// Floating background images
+function createFloatingBackgrounds() {
+    if (!ENABLE_FLOATING_BACKGROUNDS) return;
+
+    const container = document.getElementById('floatingBackground');
+    if (!container) return;
+
+    // Get all games that have valid Steam images (not local files)
+    const gamesWithImages = Object.entries(steamAppIds)
+        .filter(([name, id]) => typeof id === 'number')
+        .map(([name, id]) => ({ name, id }));
+
+    // Use all games for maximum variety and coverage
+    const allGames = [...gamesWithImages];
+
+    // Helper function to shuffle array
+    function shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    // Create wrapper for animation
+    const wrapper = document.createElement('div');
+    wrapper.className = 'floating-background-wrapper';
+
+    // Create two grids with DIFFERENT shuffles to avoid duplicates at seam
+    for (let gridNum = 0; gridNum < 2; gridNum++) {
+        const grid = document.createElement('div');
+        grid.className = 'background-grid';
+
+        // Shuffle differently for each grid
+        const shuffledGames = shuffleArray(allGames);
+
+        shuffledGames.forEach((game) => {
+            const img = document.createElement('img');
+            img.className = 'floating-image';
+            img.src = getSteamImageUrl(game.id, 'header');
+
+            // Handle image load errors to avoid gaps
+            img.onerror = function() {
+                console.log(`Failed to load image for: ${game.name} (Steam ID: ${game.id})`);
+                this.style.display = 'none';
+            };
+
+            grid.appendChild(img);
+        });
+
+        wrapper.appendChild(grid);
+    }
+
+    container.appendChild(wrapper);
+}
+
+// Initialize floating backgrounds when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    createFloatingBackgrounds();
+});
