@@ -115,6 +115,7 @@ const steamAchievements = {
     "Chained Together": { hasAchievements: true, count: 16 },
     "Clustertruck": { hasAchievements: true, count: 19 },
     "Comedy Night": { hasAchievements: false, count: 0 }, // Need to verify - page showed no achievements
+    "Company of Heroes 2": { hasAchievements: true, count: 452 },
     "Content Warning": { hasAchievements: false, count: 0 },
     "Contra Anniversary Collection": { hasAchievements: true, count: 16 },
     "Control Ultimate Edition": { hasAchievements: true, count: 67 },
@@ -134,6 +135,7 @@ const steamAchievements = {
     "Darkest Dungeon®": { hasAchievements: true, count: 120 },
     "Dead Rising 2: Off the Record": { hasAchievements: true, count: 50 },
     "DEATH STRANDING DIRECTOR'S CUT": { hasAchievements: true, count: 63 },
+    "DEATHLOOP": { hasAchievements: true, count: 58 },
     "Deep Rock Galactic": { hasAchievements: true, count: 69 },
     "Darwin Project": { hasAchievements: true, count: 14 },
     "Day of Defeat": { hasAchievements: false, count: 0 }, // No stats available
@@ -146,6 +148,7 @@ const steamAchievements = {
     "Dead Island Retro Revenge": { hasAchievements: true, count: 13 },
     "Dead Island Riptide Definitive Edition": { hasAchievements: true, count: 35 },
     "Dead Rising": { hasAchievements: true, count: 50 },
+    "Dead Space": { hasAchievements: true, count: 47 },
     "Deus Ex: Human Revolution - Director's Cut": { hasAchievements: true, count: 59 },
     "Deus Ex: The Fall": { hasAchievements: true, count: 28 },
     "Deus Ex: Mankind Divided™": { hasAchievements: true, count: 81 },
@@ -160,6 +163,7 @@ const steamAchievements = {
     // User's actual games from collection
     "Deceit": { hasAchievements: true, count: 14 },
     "Destroy All Humans!": { hasAchievements: true, count: 40 },
+    "Destroy All Humans! 2 - Reprobed": { hasAchievements: true, count: 44 },
     "Don't Starve Together": { hasAchievements: false, count: 0 }, // No stats available
     "Dungeon Defenders II": { hasAchievements: true, count: 18 },
     "Enter the Gungeon": { hasAchievements: true, count: 54 },
@@ -177,6 +181,11 @@ const steamAchievements = {
     "Far Cry 6": { hasAchievements: true, count: 99 },
     "Far Cry New Dawn": { hasAchievements: true, count: 50 },
     "Far Cry Primal": { hasAchievements: true, count: 55 },
+    "Fears to Fathom - Carson House": { hasAchievements: true, count: 10 },
+    "Fears to Fathom - Home Alone": { hasAchievements: true, count: 10 },
+    "Fears to Fathom - Ironbark Lookout": { hasAchievements: true, count: 10 },
+    "Fears to Fathom - Norwood Hitchhike": { hasAchievements: true, count: 10 },
+    "Fears to Fathom - Woodbury Getaway": { hasAchievements: true, count: 10 },
     "FINAL FANTASY": { hasAchievements: true, count: 24 },
     "FINAL FANTASY II": { hasAchievements: true, count: 28 },
     "FINAL FANTASY III": { hasAchievements: true, count: 31 },
@@ -215,6 +224,7 @@ const steamAchievements = {
     "Halo Wars: Definitive Edition": { hasAchievements: true, count: 75 },
     "Hellblade: Senua's Sacrifice": { hasAchievements: true, count: 14 },
     "Hellblade: Senua's Sacrifice VR Edition": { hasAchievements: true, count: 14 },
+    "High on Life": { hasAchievements: true, count: 44 },
     "Hello Neighbor": { hasAchievements: true, count: 17 },
     "HITMAN™": { hasAchievements: true, count: 69 },
     "HITMAN™ 2": { hasAchievements: true, count: 146 },
@@ -378,6 +388,7 @@ const steamAchievements = {
     "The Elder Scrolls V: Skyrim Special Edition": { hasAchievements: true, count: 75 }, // ~15 hours
     "The Elder Scrolls IV: Oblivion Game of the Year Edition (2009)": { hasAchievements: false, count: 0 }, // ~15 hours - No stats available
     "The Elder Scrolls III: Morrowind": { hasAchievements: false, count: 0 }, // ~15 hours - No stats available
+    "The Elder Scrolls® Online": { hasAchievements: false, count: 0 }, // ~41 hours - No stats available
     "The Witcher 3: Wild Hunt": { hasAchievements: true, count: 78 }, // ~15 hours
     "Cyberpunk 2077": { hasAchievements: true, count: 57 }, // ~15 hours
     "Red Dead Redemption 2": { hasAchievements: true, count: 51 }, // ~12 hours
@@ -643,14 +654,17 @@ const steamAchievements = {
     "PowerWash Simulator": { hasAchievements: true, count: 100 }, // ~10 hours
     "PROTOTYPE 2": { hasAchievements: true, count: 43 }, // ~10 hours
     "Punch Club": { hasAchievements: true, count: 47 }, // ~6 hours
+    "Pummel Party": { hasAchievements: true, count: 31 }, // ~22.5 hours
     "Quake Champions": { hasAchievements: true, count: 52 }, // ~12 hours
     "RAGE": { hasAchievements: true, count: 60 }, // ~12 hours
     "RAGE 2": { hasAchievements: true, count: 64 }, // ~12 hours
+    "R.E.P.O": { hasAchievements: false, count: 0 }, // ~2 hours
     "Rayman Legends": { hasAchievements: true, count: 42 }, // ~10 hours
     "Red Dead Redemption": { hasAchievements: true, count: 51 }, // ~20 hours
     "Rust - Staging Branch": { hasAchievements: true, count: 6 }, // ~14 hours
     "Rise of the Tomb Raider": { hasAchievements: true, count: 143 }, // ~15 hours
     "Risk of Rain (2013)": { hasAchievements: true, count: 15 }, // ~8 hours
+    "Saints Row": { hasAchievements: true, count: 64 }, // ~11 hours
     "Saints Row The Third Remastered": { hasAchievements: true, count: 79 }, // ~15 hours
     "Scott Pilgrim vs The World": { hasAchievements: true, count: 19 }, // ~8 hours
     "Scribblenauts Unlimited": { hasAchievements: true, count: 25 }, // ~10 hours
@@ -659,6 +673,7 @@ const steamAchievements = {
     "SEGA Mega Drive & Genesis Classics": { hasAchievements: true, count: 25 }, // ~10 hours
     "Shadow of the Tomb Raider": { hasAchievements: true, count: 99 }, // ~15 hours
     "Slay the Spire": { hasAchievements: true, count: 46 }, // ~12 hours
+    "Sleeping Dogs: Definitive Edition": { hasAchievements: true, count: 59 }, // ~10 hours
     "Sniper Elite V2": { hasAchievements: true, count: 47 }, // ~10 hours
     "Sniper Elite 3": { hasAchievements: true, count: 77 }, // ~10 hours
     "Sniper Elite 4": { hasAchievements: true, count: 85 }, // ~12 hours
@@ -672,14 +687,17 @@ const steamAchievements = {
     "Sonic Generations": { hasAchievements: true, count: 49 }, // ~6 hours
     "Sonic Lost World": { hasAchievements: true, count: 100 }, // ~10 hours
     "Sonic Mania": { hasAchievements: true, count: 18 }, // ~5 hours
+    "SOMA": { hasAchievements: true, count: 10 }, // ~10 hours
     "SONIC THE HEDGEHOG 4 Episode I": { hasAchievements: true, count: 12 }, // ~3 hours
     "SONIC THE HEDGEHOG 4 Episode II": { hasAchievements: true, count: 12 }, // ~3 hours
     "South Park The Fractured But Whole": { hasAchievements: true, count: 35 }, // ~15 hours
     "South Park™: The Stick of Truth™": { hasAchievements: true, count: 50 }, // ~12 hours
+    "SOUTH PARK: SNOW DAY!": { hasAchievements: true, count: 32 }, // ~4 hours
     "SpeedRunners": { hasAchievements: true, count: 29 }, // ~8 hours
     "Split Fiction": { hasAchievements: true, count: 20 }, // ~10 hours
     "Splitgate": { hasAchievements: true, count: 30 }, // ~8 hours
     "SpongeBob SquarePants: Battle for Bikini Bottom - Rehydrated": { hasAchievements: true, count: 32 }, // ~8 hours
+    "SpongeBob SquarePants: The Cosmic Shake": { hasAchievements: true, count: 44 }, // ~14 hours
     "Spyro™ Reignited Trilogy": { hasAchievements: true, count: 105 }, // ~15 hours
     "STAR WARS™ Battlefront™": { hasAchievements: true, count: 63 }, // ~12 hours
     "STAR WARS™ Battlefront™ II": { hasAchievements: true, count: 43 }, // ~12 hours
@@ -765,8 +783,10 @@ const steamAchievements = {
     "Firewatch": { hasAchievements: true, count: 10 }, // ~23 hours
     "Halo Infinite": { hasAchievements: true, count: 144 }, // ~23 hours
     "Red Dead Redemption 2": { hasAchievements: true, count: 51 }, // ~24 hours
+    "Yooka-Laylee": { hasAchievements: true, count: 35 }, // ~15 hours
+    "Yooka-Laylee and the Impossible Lair": { hasAchievements: true, count: 47 }, // ~10 hours
 
-    // Total: ~187 games in final database completion batch
+    // Total: ~189 games in final database completion batch
 };
 
 // Helper function to get achievement data for a game
