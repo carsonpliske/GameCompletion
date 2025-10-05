@@ -207,7 +207,11 @@ const releaseDates = {
     "Far Cry Primal": 2016,
     "Far Cry® 3": 2012,
     "Far Cry® 3 Blood Dragon": 2013,
-    "Fears to Fathom - Woodbury Getaway": 2021,
+    "Fears to Fathom - Carson House": 2023,
+    "Fears to Fathom - Home Alone": 2021,
+    "Fears to Fathom - Ironbark Lookout": 2023,
+    "Fears to Fathom - Norwood Hitchhike": 2022,
+    "Fears to Fathom - Woodbury Getaway": 2024,
     "Final DOOM": 1996,
     "FINAL FANTASY": 1987,
     "FINAL FANTASY II": 1988,
@@ -645,7 +649,23 @@ const releaseDates = {
     "Five Nights at Freddy's: Sister Location": 2016,
     "Flight Simulator X Steam Edition": 2014,
     "Frostpunk": 2018,
-    "Tomb Raider IV-VI Remastered": 2025
+    "Tomb Raider IV-VI Remastered": 2025,
+    "Company of Heroes 2": 2013,
+    "Dead Space": 2023,
+    "DEATHLOOP": 2021,
+    "Destroy All Humans! 2 - Reprobed": 2022,
+    "High on Life": 2022,
+    "Prey": 2017,
+    "Pummel Party": 2018,
+    "R.E.P.O": 2025,
+    "Saints Row": 2023,
+    "Sleeping Dogs: Definitive Edition": 2014,
+    "SOMA": 2015,
+    "SpongeBob SquarePants: The Cosmic Shake": 2023,
+    "SOUTH PARK: SNOW DAY!": 2024,
+    "The Elder Scrolls® Online": 2014,
+    "Yooka-Laylee": 2017,
+    "Yooka-Laylee and the Impossible Lair": 2019
 };
 
 // Create the full database with all games
@@ -682,6 +702,7 @@ const allGames = [
     "Left 4 Dead 2", "Dungeon Defenders", "Pacify", "NBA 2K24", "Wizard101", "Never Alone (Kisima Ingitchuna)",
     "What Remains of Edith Finch", "MiniRoyale", "The Awesome Adventures of Captain Spirit", "Fallout: New Vegas",
     "Getting Over It with Bennett Foddy", "Bully: Scholarship Edition",
+    "Fears to Fathom - Carson House", "Fears to Fathom - Home Alone", "Fears to Fathom - Ironbark Lookout", "Fears to Fathom - Norwood Hitchhike",
     "Fears to Fathom - Woodbury Getaway", "Devolverland Expo", "Donut County", "Until Dawn™", "Escape the Backrooms",
     "UNO", "Mage Arena", "God of War", "Halo: The Master Chief Collection", "Lara Croft GO",
     "Call of Duty: Advanced Warfare - Multiplayer", "Welcome to the Game", "Rec Room", "Tomb Raider: Underworld",
@@ -801,6 +822,10 @@ const allGames = [
     "Worms", "Worms Armageddon", "Worms Blast", "Worms Clan Wars", "Worms Crazy Golf", "Worms Pinball",
     "Worms Reloaded", "Worms Revolution", "Worms Rumble", "Worms Ultimate Mayhem", "Worms W.M.D",
     "Worms World Party Remastered", "XCOM 2", "Tomb Raider IV-VI Remastered", "Frostpunk",
+    "Company of Heroes 2", "Dead Space", "DEATHLOOP", "Destroy All Humans! 2 - Reprobed", "High on Life", "Prey",
+    "Pummel Party", "R.E.P.O", "Saints Row", "Sleeping Dogs: Definitive Edition", "SOMA",
+    "SpongeBob SquarePants: The Cosmic Shake", "SOUTH PARK: SNOW DAY!", "The Elder Scrolls® Online",
+    "Yooka-Laylee", "Yooka-Laylee and the Impossible Lair",
     "Flight Simulator X Steam Edition", "Death Stranding Directors Cut", "Escape Simulator",
     "Five Nights at Freddy's: Sister Location", "Five Nights at Freddy's 4"
 ];
