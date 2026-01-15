@@ -2337,6 +2337,13 @@ function renderGames() {
                         <span class="achievement-count">${achievementData.count}</span>
                     </div>
                 ` : ''}
+                ${isCompleted && getGameCompletionData(game.title).completionDate ? `
+                    <div class="completion-date"
+                         onclick="editCompletionDate(event, '${game.title.replace(/'/g, "\\'")}', '${formatCompletionDate(getGameCompletionData(game.title).completionDate)}')"
+                         title="Click to edit completion date">
+                        Completed: ${formatCompletionDate(getGameCompletionData(game.title).completionDate)}
+                    </div>
+                ` : ''}
             </div>
             <div class="game-content">
                 <div class="game-header">
@@ -2364,6 +2371,28 @@ function renderGames() {
                     <div class="stat-row">
                         <span class="stat-label">Release Year</span>
                         <span class="stat-year">${game.releaseYear}</span>
+                    </div>
+                    ` : ''}
+                    ${isCompleted ? `
+                    <div class="stat-row custom-time-row">
+                        <span class="stat-label">My Time To Complete</span>
+                        ${getGameCompletionData(game.title).customTime ? `
+                            <span class="stat-time time-custom"
+                                  onclick="editCustomTime(event, '${game.title.replace(/'/g, "\\'")}', '${getGameCompletionData(game.title).customTime}')"
+                                  title="Click to edit your completion time"
+                                  style="cursor: pointer;">
+                                ${formatTime(getGameCompletionData(game.title).customTime)}
+                            </span>
+                        ` : `
+                            <input type="number"
+                                   step="0.5"
+                                   min="0"
+                                   placeholder="-- hours"
+                                   class="custom-time-input"
+                                   value=""
+                                   onchange="updateCustomTime('${game.title.replace(/'/g, "\\'")}', this.value)"
+                                   onblur="updateCustomTime('${game.title.replace(/'/g, "\\'")}', this.value)">
+                        `}
                     </div>
                     ` : ''}
                 </div>
@@ -2514,14 +2543,42 @@ function updateStats() {
 // Game completion tracking functions
 function getGameCompletionStatus(gameTitle) {
     const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
-    return completedGames[gameTitle] === true;
+    const entry = completedGames[gameTitle];
+
+    // Support both legacy boolean and new object format
+    if (typeof entry === 'boolean') {
+        return entry;
+    }
+    return entry?.completed === true;
+}
+
+function getGameCompletionData(gameTitle) {
+    const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
+    const entry = completedGames[gameTitle];
+
+    // Normalize to object format
+    if (entry === true) {
+        return { completed: true, completionDate: null, customTime: null };
+    }
+    if (typeof entry === 'object' && entry.completed) {
+        return entry;
+    }
+    return { completed: false, completionDate: null, customTime: null };
 }
 
 function toggleGameCompletion(gameTitle, isCompleted) {
     const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
 
     if (isCompleted) {
-        completedGames[gameTitle] = true;
+        // Get current MST time
+        const now = new Date();
+        const mstDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+
+        completedGames[gameTitle] = {
+            completed: true,
+            completionDate: mstDate.toISOString(),
+            customTime: null
+        };
     } else {
         delete completedGames[gameTitle];
     }
@@ -2531,6 +2588,69 @@ function toggleGameCompletion(gameTitle, isCompleted) {
     // Update the visual state of the game card
     updateGameCardVisuals(gameTitle, isCompleted);
     updateStats();
+    renderGames(); // Re-render to show/hide date and custom time field
+}
+
+function formatCompletionDate(isoDateString) {
+    if (!isoDateString) return null;
+
+    const date = new Date(isoDateString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
+function editCompletionDate(event, gameTitle, currentDateStr) {
+    event.stopPropagation(); // Prevent Steam store link from opening
+
+    const newDate = prompt('Edit completion date (format: Jan 15, 2025):', currentDateStr);
+    if (newDate && newDate !== currentDateStr) {
+        updateCompletionDate(gameTitle, newDate);
+    }
+}
+
+function updateCompletionDate(gameTitle, dateString) {
+    const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
+    const entry = completedGames[gameTitle];
+
+    if (!entry || typeof entry !== 'object') return;
+
+    try {
+        const parsedDate = new Date(dateString);
+        if (isNaN(parsedDate.getTime())) {
+            alert('Invalid date format. Please use format like "Jan 15, 2025"');
+            return;
+        }
+
+        entry.completionDate = parsedDate.toISOString();
+        localStorage.setItem('completedGames', JSON.stringify(completedGames));
+        renderGames();
+    } catch (e) {
+        alert('Invalid date format. Please use format like "Jan 15, 2025"');
+    }
+}
+
+function updateCustomTime(gameTitle, timeValue) {
+    const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
+    const entry = completedGames[gameTitle];
+
+    if (!entry || typeof entry !== 'object') return;
+
+    const numValue = parseFloat(timeValue);
+    entry.customTime = (isNaN(numValue) || numValue < 0) ? null : numValue;
+
+    localStorage.setItem('completedGames', JSON.stringify(completedGames));
+    renderGames(); // Re-render to show as static text
+}
+
+function editCustomTime(event, gameTitle, currentTime) {
+    event.stopPropagation();
+
+    const newTime = prompt('Enter your completion time in hours (decimals allowed, e.g., 45.5):', currentTime || '');
+    if (newTime !== null && newTime !== currentTime) {
+        updateCustomTime(gameTitle, newTime);
+    }
 }
 
 function updateGameCardVisuals(gameTitle, isCompleted) {
