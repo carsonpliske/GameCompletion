@@ -2418,10 +2418,10 @@ function filterGames() {
             return false;
         }
 
-        // When sorting by completion date, only show completed games
-        if (sortBy === 'completionDate') {
+        // When sorting by completion date or my completion time, only show completed games
+        if (sortBy === 'completionDate' || sortBy === 'myCompletionTime') {
             const compData = getGameCompletionData(gameName);
-            if (!compData.completionDate) {
+            if (!compData.completed) {
                 return false;
             }
         }
