@@ -2331,7 +2331,7 @@ function renderGames() {
         const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
 
         gameCard.innerHTML = `
-            <div class="game-image-container" onclick="openSteamStore('${game.title}')" style="cursor: pointer;" title="View on Steam Store">
+            <div class="game-image-container" onclick="openSteamStore('${game.title.replace(/'/g, "\\'")}')" style="cursor: pointer;" title="View on Steam Store">
                 <div class="game-image">
                     ${imageHtml}
                 </div>
