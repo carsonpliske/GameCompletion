@@ -2331,10 +2331,10 @@ function renderGames() {
         const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
 
         const steamAppId = getSteamAppId(game.title);
-        const steamUrl = steamAppId ? `https://store.steampowered.com/app/${steamAppId}` : '#';
+        const steamStoreUrl = steamAppId ? `https://store.steampowered.com/app/${steamAppId}` : '#';
 
         gameCard.innerHTML = `
-            <a class="game-image-container" href="${steamUrl}" target="_blank" rel="noopener" title="View on Steam Store">
+            <a class="game-image-container" href="${steamStoreUrl}" target="_blank" rel="noopener" title="View on Steam Store">
                 <div class="game-image">
                     ${imageHtml}
                 </div>
