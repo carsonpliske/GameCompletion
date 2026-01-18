@@ -1323,7 +1323,7 @@ const steamAppIds = {
     "Thief II: The Metal Age": 211740,
     "Tom Clancy's EndWar": 21800,
     "Tom Clancy's Ghost Recon": 15300,
-    "Tom Clancy's Ghost Recon: Desert Siege": 13630,
+    "Tom Clancy's Ghost Recon: Desert Siege": 13620,
     "Tom Clancy's Ghost Recon: Island Thunder": 13630,
     "Tom Clancy's Ghost Recon Future Soldier": 212630,
     "Tom Clancy's Ghost Recon Wildlands": 460930,
