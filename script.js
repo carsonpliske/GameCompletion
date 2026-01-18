@@ -1036,6 +1036,7 @@ const steamAppIds = {
     "Call of Duty: Ghosts": 209160,
     "PEAK": "peak.jpg",
     "Tom Clancy's Rainbow Six Siege": 359550,
+    "Tom Clancy's Rainbow Six® Siege X": 359550,
     "Plants vs. Zombies™ Garden Warfare 2: Deluxe Edition": 1922560,
     "Escape Memoirs: Mini Stories": 2098350,
     "LEGO Batman: The Videogame": 21000,
