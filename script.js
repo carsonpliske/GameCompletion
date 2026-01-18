@@ -2330,8 +2330,11 @@ function renderGames() {
         // Get achievement data
         const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
 
+        const steamAppId = getSteamAppId(game.title);
+        const steamUrl = steamAppId ? `https://store.steampowered.com/app/${steamAppId}` : '#';
+
         gameCard.innerHTML = `
-            <div class="game-image-container" onclick="openSteamStore('${game.title.replace(/'/g, "\\'")}')" style="cursor: pointer;" title="View on Steam Store">
+            <a class="game-image-container" href="${steamUrl}" target="_blank" rel="noopener" title="View on Steam Store">
                 <div class="game-image">
                     ${imageHtml}
                 </div>
@@ -2343,12 +2346,12 @@ function renderGames() {
                 ` : ''}
                 ${isCompleted && getGameCompletionData(game.title).completionDate ? `
                     <div class="completion-date"
-                         onclick="editCompletionDate(event, '${game.title.replace(/'/g, "\\'")}', '${formatCompletionDate(getGameCompletionData(game.title).completionDate)}')"
+                         onclick="event.preventDefault(); editCompletionDate(event, '${game.title.replace(/'/g, "\\'")}', '${formatCompletionDate(getGameCompletionData(game.title).completionDate)}')"
                          title="Click to edit completion date">
                         Completed: ${formatCompletionDate(getGameCompletionData(game.title).completionDate)}
                     </div>
                 ` : ''}
-            </div>
+            </a>
             <div class="game-content">
                 <div class="game-header">
                     <div class="game-title">${game.title}</div>

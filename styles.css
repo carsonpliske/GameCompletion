@@ -213,6 +213,9 @@ header p {
     display: flex;
     flex-direction: column;
     border-right: 1px solid #495057;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
 }
 
 .game-image {
