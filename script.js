@@ -2410,11 +2410,26 @@ function renderGames() {
 
 function filterGames() {
     const searchTerm = searchInput.value.toLowerCase();
-    filteredGames = currentGames.filter(gameName =>
-        gameName.toLowerCase().includes(searchTerm)
-    );
+    const sortBy = sortSelect.value;
+
+    filteredGames = currentGames.filter(gameName => {
+        // Basic search filter
+        if (!gameName.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+
+        // When sorting by completion date, only show completed games
+        if (sortBy === 'completionDate') {
+            const compData = getGameCompletionData(gameName);
+            if (!compData.completionDate) {
+                return false;
+            }
+        }
+
+        return true;
+    });
     updateStats();
-    renderGames();
+    sortGames();
 }
 
 function toggleSortDirection() {
@@ -2791,14 +2806,14 @@ function getCompletedGamesFromFiltered() {
 }
 
 searchInput.addEventListener('input', filterGames);
-sortSelect.addEventListener('change', sortGames);
+sortSelect.addEventListener('change', filterGames);
 sortDirectionBtn.addEventListener('click', toggleSortDirection);
 
 // Set default sort to "100% Complete" with ascending direction (shortest first) and apply it
 sortSelect.value = 'completionistTime';
 sortDirection = 'asc';
 updateSortDirectionArrow();
-sortGames();
+filterGames();
 
 console.log('About to call updateStats and renderGames...');
 console.log('currentGames length:', currentGames.length);
