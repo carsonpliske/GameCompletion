@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
     <canvas id="confetti-canvas"></canvas>
@@ -22,16 +22,17 @@
             <div class="sort-container">
                 <label for="sortSelect">Sort by:</label>
                 <select id="sortSelect">
-                    <option value="name">Name (A-Z)</option>
-                    <option value="mainTimeAsc">Main Story (Shortest)</option>
-                    <option value="mainTimeDesc">Main Story (Longest)</option>
-                    <option value="completionistTimeAsc">100% Complete (Shortest)</option>
-                    <option value="completionistTimeDesc">100% Complete (Longest)</option>
-                    <option value="achievementsDesc">Achievements (Most)</option>
-                    <option value="achievementsAsc">Achievements (Least)</option>
-                    <option value="releaseYearAsc">Release Year (Oldest)</option>
-                    <option value="releaseYearDesc">Release Year (Newest)</option>
+                    <option value="name">Name</option>
+                    <option value="mainTime">Main Story</option>
+                    <option value="completionistTime">100% Complete</option>
+                    <option value="achievements">Achievements</option>
+                    <option value="releaseYear">Release Year</option>
+                    <option value="completionDate">Completion Date</option>
+                    <option value="myCompletionTime">My Completion Time</option>
                 </select>
+                <button id="sortDirectionBtn" class="sort-direction-btn" title="Toggle sort direction">
+                    <span class="sort-arrow">▲</span>
+                </button>
             </div>
         </div>
 
@@ -58,6 +59,6 @@
     <script src="manualGameData.js?v=7"></script>
     <script src="hltbGameData.js?v=7"></script>
     <script src="achievementData.js?v=9"></script>
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=12"></script>
 </body>
 </html>

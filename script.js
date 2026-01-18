@@ -2263,9 +2263,13 @@ let filteredGames = Object.keys(gameDatabase);
 
 const searchInput = document.getElementById('searchInput');
 const sortSelect = document.getElementById('sortSelect');
+const sortDirectionBtn = document.getElementById('sortDirectionBtn');
 const gamesListContainer = document.getElementById('gamesList');
 const totalGamesSpan = document.getElementById('totalGames');
 const filteredGamesSpan = document.getElementById('filteredGames');
+
+// Sort direction state: 'asc' for ascending, 'desc' for descending
+let sortDirection = 'asc';
 
 // Debug: Check if DOM elements exist
 if (!gamesListContainer) console.error('gamesList element not found!');
@@ -2413,117 +2417,111 @@ function filterGames() {
     renderGames();
 }
 
+function toggleSortDirection() {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    updateSortDirectionArrow();
+    sortGames();
+}
+
+function updateSortDirectionArrow() {
+    const arrow = sortDirectionBtn.querySelector('.sort-arrow');
+    arrow.textContent = sortDirection === 'asc' ? '▲' : '▼';
+    sortDirectionBtn.title = sortDirection === 'asc' ? 'Ascending (click to toggle)' : 'Descending (click to toggle)';
+}
+
 function sortGames() {
     const sortBy = sortSelect.value;
+    const isAsc = sortDirection === 'asc';
 
     filteredGames.sort((a, b) => {
         const gameA = gameDatabase[a];
         const gameB = gameDatabase[b];
 
+        let result = 0;
+
         switch (sortBy) {
             case 'name':
-                return gameA.title.localeCompare(gameB.title);
+                result = gameA.title.localeCompare(gameB.title);
+                break;
 
-            case 'mainTimeAsc':
-                // Convert to numbers and handle null/undefined
+            case 'mainTime':
                 const timeA = parseFloat(gameA.timeToBeat) || 0;
                 const timeB = parseFloat(gameB.timeToBeat) || 0;
 
-                // Put games without time data at the end
-                if (!gameA.timeToBeat && !gameB.timeToBeat) return 0;
-                if (!gameA.timeToBeat) return 1;
-                if (!gameB.timeToBeat) return -1;
+                if (!gameA.timeToBeat && !gameB.timeToBeat) { result = 0; break; }
+                if (!gameA.timeToBeat) { result = 1; break; }
+                if (!gameB.timeToBeat) { result = -1; break; }
 
-                return timeA - timeB;
+                result = timeA - timeB;
+                break;
 
-            case 'mainTimeDesc':
-                const timeA2 = parseFloat(gameA.timeToBeat) || 0;
-                const timeB2 = parseFloat(gameB.timeToBeat) || 0;
-
-                // Put games without time data at the end
-                if (!gameA.timeToBeat && !gameB.timeToBeat) return 0;
-                if (!gameA.timeToBeat) return 1;
-                if (!gameB.timeToBeat) return -1;
-
-                return timeB2 - timeA2;
-
-            case 'completionistTimeAsc':
+            case 'completionistTime':
                 const compTimeA = parseFloat(gameA.completionistTime) || 0;
                 const compTimeB = parseFloat(gameB.completionistTime) || 0;
 
-                // Put games without completionist data at the end
-                if (!gameA.completionistTime && !gameB.completionistTime) return 0;
-                if (!gameA.completionistTime) return 1;
-                if (!gameB.completionistTime) return -1;
+                if (!gameA.completionistTime && !gameB.completionistTime) { result = 0; break; }
+                if (!gameA.completionistTime) { result = 1; break; }
+                if (!gameB.completionistTime) { result = -1; break; }
 
-                return compTimeA - compTimeB;
+                result = compTimeA - compTimeB;
+                break;
 
-            case 'completionistTimeDesc':
-                const compTimeA2 = parseFloat(gameA.completionistTime) || 0;
-                const compTimeB2 = parseFloat(gameB.completionistTime) || 0;
-
-                // Put games without completionist data at the end
-                if (!gameA.completionistTime && !gameB.completionistTime) return 0;
-                if (!gameA.completionistTime) return 1;
-                if (!gameB.completionistTime) return -1;
-
-                return compTimeB2 - compTimeA2;
-
-            case 'releaseYearAsc':
+            case 'releaseYear':
                 const yearA = parseInt(gameA.releaseYear) || 0;
                 const yearB = parseInt(gameB.releaseYear) || 0;
 
-                // Put games without release year data at the end
-                if (!gameA.releaseYear && !gameB.releaseYear) return 0;
-                if (!gameA.releaseYear) return 1;
-                if (!gameB.releaseYear) return -1;
+                if (!gameA.releaseYear && !gameB.releaseYear) { result = 0; break; }
+                if (!gameA.releaseYear) { result = 1; break; }
+                if (!gameB.releaseYear) { result = -1; break; }
 
-                return yearA - yearB;
+                result = yearA - yearB;
+                break;
 
-            case 'releaseYearDesc':
-                const yearA2 = parseInt(gameA.releaseYear) || 0;
-                const yearB2 = parseInt(gameB.releaseYear) || 0;
-
-                // Put games without release year data at the end
-                if (!gameA.releaseYear && !gameB.releaseYear) return 0;
-                if (!gameA.releaseYear) return 1;
-                if (!gameB.releaseYear) return -1;
-
-                return yearB2 - yearA2;
-
-            case 'achievementsDesc':
-                // Get achievement data for both games
+            case 'achievements':
                 const achieveDataA = getAchievementData(gameA.title);
                 const achieveDataB = getAchievementData(gameB.title);
                 const achieveCountA = achieveDataA.hasAchievements ? achieveDataA.count : 0;
                 const achieveCountB = achieveDataB.hasAchievements ? achieveDataB.count : 0;
 
-                // Sort by achievement count, highest first
-                // Games without achievements go to the end
-                if (achieveCountA === 0 && achieveCountB === 0) return 0;
-                if (achieveCountA === 0) return 1;
-                if (achieveCountB === 0) return -1;
+                if (achieveCountA === 0 && achieveCountB === 0) { result = 0; break; }
+                if (achieveCountA === 0) { result = 1; break; }
+                if (achieveCountB === 0) { result = -1; break; }
 
-                return achieveCountB - achieveCountA;
+                result = achieveCountA - achieveCountB;
+                break;
 
-            case 'achievementsAsc':
-                // Get achievement data for both games
-                const achieveDataA2 = getAchievementData(gameA.title);
-                const achieveDataB2 = getAchievementData(gameB.title);
-                const achieveCountA2 = achieveDataA2.hasAchievements ? achieveDataA2.count : 0;
-                const achieveCountB2 = achieveDataB2.hasAchievements ? achieveDataB2.count : 0;
+            case 'completionDate':
+                const compDataA = getGameCompletionData(gameA.title);
+                const compDataB = getGameCompletionData(gameB.title);
+                const dateA = compDataA.completionDate ? new Date(compDataA.completionDate).getTime() : 0;
+                const dateB = compDataB.completionDate ? new Date(compDataB.completionDate).getTime() : 0;
 
-                // Sort by achievement count, lowest first
-                // Games without achievements go to the end
-                if (achieveCountA2 === 0 && achieveCountB2 === 0) return 0;
-                if (achieveCountA2 === 0) return 1;
-                if (achieveCountB2 === 0) return -1;
+                if (!compDataA.completionDate && !compDataB.completionDate) { result = 0; break; }
+                if (!compDataA.completionDate) { result = 1; break; }
+                if (!compDataB.completionDate) { result = -1; break; }
 
-                return achieveCountA2 - achieveCountB2;
+                result = dateA - dateB;
+                break;
+
+            case 'myCompletionTime':
+                const myDataA = getGameCompletionData(gameA.title);
+                const myDataB = getGameCompletionData(gameB.title);
+                const myTimeA = myDataA.customTime || 0;
+                const myTimeB = myDataB.customTime || 0;
+
+                if (!myDataA.customTime && !myDataB.customTime) { result = 0; break; }
+                if (!myDataA.customTime) { result = 1; break; }
+                if (!myDataB.customTime) { result = -1; break; }
+
+                result = myTimeA - myTimeB;
+                break;
 
             default:
-                return 0;
+                result = 0;
         }
+
+        // Apply sort direction (reverse if descending)
+        return isAsc ? result : -result;
     });
 
     renderGames();
@@ -2589,6 +2587,9 @@ function toggleGameCompletion(gameTitle, isCompleted) {
     updateGameCardVisuals(gameTitle, isCompleted);
     updateStats();
     renderGames(); // Re-render to show/hide date and custom time field
+
+    // Update floating background highlight
+    updateFloatingImageHighlight(gameTitle, isCompleted);
 }
 
 function formatCompletionDate(isoDateString) {
@@ -2791,9 +2792,12 @@ function getCompletedGamesFromFiltered() {
 
 searchInput.addEventListener('input', filterGames);
 sortSelect.addEventListener('change', sortGames);
+sortDirectionBtn.addEventListener('click', toggleSortDirection);
 
-// Set default sort to "100% Complete (Shortest)" and apply it
-sortSelect.value = 'completionistTimeAsc';
+// Set default sort to "100% Complete" with ascending direction (shortest first) and apply it
+sortSelect.value = 'completionistTime';
+sortDirection = 'asc';
+updateSortDirectionArrow();
 sortGames();
 
 console.log('About to call updateStats and renderGames...');
@@ -2885,6 +2889,20 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     document.body.appendChild(sortingButton);
 }
 
+// Update floating background image highlight when a game's completion status changes
+function updateFloatingImageHighlight(gameTitle, isCompleted) {
+    const floatingImages = document.querySelectorAll('.floating-image[data-game-name]');
+    floatingImages.forEach(img => {
+        if (img.dataset.gameName === gameTitle) {
+            if (isCompleted) {
+                img.classList.add('completed-highlight');
+            } else {
+                img.classList.remove('completed-highlight');
+            }
+        }
+    });
+}
+
 // Floating background images
 function createFloatingBackgrounds() {
     if (!ENABLE_FLOATING_BACKGROUNDS) return;
@@ -2926,6 +2944,12 @@ function createFloatingBackgrounds() {
             const img = document.createElement('img');
             img.className = 'floating-image';
             img.src = getSteamImageUrl(game.id, 'header');
+            img.dataset.gameName = game.name;
+
+            // Check if this game is completed and add highlight
+            if (getGameCompletionStatus(game.name)) {
+                img.classList.add('completed-highlight');
+            }
 
             // Handle image load errors to avoid gaps
             img.onerror = function() {
