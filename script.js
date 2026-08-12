@@ -2486,6 +2486,8 @@ if (typeof gameDatabase !== 'undefined' && typeof hltbGameTimes !== 'undefined')
 // Use games from gameDatabase instead of hardcoded gamesList
 let currentGames = Object.keys(gameDatabase);
 let filteredGames = Object.keys(gameDatabase);
+let showCompletedOnly = false;
+let showInProgressOnly = false;
 
 const searchInput = document.getElementById('searchInput');
 const sortSelect = document.getElementById('sortSelect');
@@ -2555,29 +2557,49 @@ function renderGames() {
 
         // Get achievement data
         const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
+        const progressData = getGameProgressData(game.title);
 
         const steamAppId = getSteamAppId(game.title);
         const steamStoreUrl = steamAppId ? `https://store.steampowered.com/app/${steamAppId}` : '#';
 
         gameCard.innerHTML = `
-            <a class="game-image-container" href="${steamStoreUrl}" target="_blank" rel="noopener" title="View on Steam Store">
-                <div class="game-image">
-                    ${imageHtml}
-                </div>
+            <div class="game-image-container">
+                <a class="game-image-link" href="${steamStoreUrl}" target="_blank" rel="noopener" title="View on Steam Store">
+                    <div class="game-image">
+                        ${imageHtml}
+                    </div>
+                </a>
                 ${achievementData.hasAchievements ? `
                     <div class="achievement-badge" title="Steam Achievements: ${achievementData.count}">
                         <span class="achievement-icon">🏆</span>
-                        <span class="achievement-count">${achievementData.count}</span>
+                        ${progressData.inProgress ? `
+                            <input type="number"
+                                   class="achievement-progress-input"
+                                   min="0"
+                                   max="${achievementData.count}"
+                                   value="${progressData.currentAchievements}"
+                                   title="Update your achievement progress"
+                                   onchange="updateAchievementProgress('${game.title.replace(/'/g, "\\'")}', this.value, ${achievementData.count})"
+                                   onblur="updateAchievementProgress('${game.title.replace(/'/g, "\\'")}', this.value, ${achievementData.count})">
+                            <span class="achievement-count">/${achievementData.count}</span>
+                        ` : `
+                            <span class="achievement-count">${achievementData.count}</span>
+                        `}
                     </div>
+                    ${progressData.inProgress ? `
+                        <div class="achievement-progress-bar-container" title="${progressData.currentAchievements}/${achievementData.count} achievements">
+                            <div class="achievement-progress-bar-fill" style="width: ${Math.round(progressData.currentAchievements / achievementData.count * 100)}%;"></div>
+                        </div>
+                    ` : ''}
                 ` : ''}
                 ${isCompleted && getGameCompletionData(game.title).completionDate ? `
                     <div class="completion-date"
-                         onclick="event.preventDefault(); editCompletionDate(event, '${game.title.replace(/'/g, "\\'")}', '${formatCompletionDate(getGameCompletionData(game.title).completionDate)}')"
+                         onclick="editCompletionDate(event, '${game.title.replace(/'/g, "\\'")}', '${formatCompletionDate(getGameCompletionData(game.title).completionDate)}')"
                          title="Click to edit completion date">
                         Completed: ${formatCompletionDate(getGameCompletionData(game.title).completionDate)}
                     </div>
                 ` : ''}
-            </a>
+            </div>
             <div class="game-content">
                 <div class="game-header">
                     <div class="game-title">${game.title}</div>
@@ -2588,6 +2610,15 @@ function renderGames() {
                             <span class="checkmark">✓</span>
                         </label>
                     </div>
+                    ${!isCompleted ? `
+                        <div class="inprogress-checkbox">
+                            <input type="checkbox" id="inprogress-${gameId}" ${progressData.inProgress ? 'checked' : ''}
+                                   onchange="toggleGameInProgress('${game.title.replace(/'/g, "\\'")}', this.checked)">
+                            <label for="inprogress-${gameId}" class="inprogress-label" title="Mark as in progress">
+                                <span class="hourglass">⏳</span>
+                            </label>
+                        </div>
+                    ` : ''}
                 </div>
                 <div class="game-stats">
                     <div class="stat-row">
@@ -2653,6 +2684,21 @@ function filterGames() {
             if (!compData.completed) {
                 return false;
             }
+        }
+
+        // Closest to Completion only makes sense for in-progress games
+        if (sortBy === 'achievementsRemaining' && !getGameProgressData(gameName).inProgress) {
+            return false;
+        }
+
+        // Toggled on via the "Completed:" stat - only show completed games
+        if (showCompletedOnly && !getGameCompletionStatus(gameName)) {
+            return false;
+        }
+
+        // Toggled on via the "In Progress:" stat - only show in-progress games
+        if (showInProgressOnly && !getGameProgressData(gameName).inProgress) {
+            return false;
         }
 
         return true;
@@ -2760,6 +2806,21 @@ function sortGames() {
                 result = myTimeA - myTimeB;
                 break;
 
+            case 'achievementsRemaining':
+                const remProgA = getGameProgressData(gameA.title);
+                const remProgB = getGameProgressData(gameB.title);
+                const remAchA = getAchievementData(gameA.title);
+                const remAchB = getAchievementData(gameB.title);
+                const remainingA = remProgA.inProgress ? (remAchA.count - remProgA.currentAchievements) : null;
+                const remainingB = remProgB.inProgress ? (remAchB.count - remProgB.currentAchievements) : null;
+
+                if (remainingA === null && remainingB === null) { result = 0; break; }
+                if (remainingA === null) { result = 1; break; }
+                if (remainingB === null) { result = -1; break; }
+
+                result = remainingA - remainingB;
+                break;
+
             default:
                 result = 0;
         }
@@ -2773,12 +2834,18 @@ function sortGames() {
 
 function updateStats() {
     const completedCount = getCompletedGamesCount();
+    const inProgressCount = getInProgressGamesCount();
     totalGamesSpan.textContent = currentGames.length;
     filteredGamesSpan.textContent = filteredGames.length;
 
     const completedGamesSpan = document.getElementById('completedGames');
     if (completedGamesSpan) {
         completedGamesSpan.textContent = completedCount;
+    }
+
+    const inProgressGamesSpan = document.getElementById('inProgressGames');
+    if (inProgressGamesSpan) {
+        inProgressGamesSpan.textContent = inProgressCount;
     }
 }
 
@@ -2808,6 +2875,53 @@ function getGameCompletionData(gameTitle) {
     return { completed: false, completionDate: null, customTime: null };
 }
 
+function getGameProgressData(gameTitle) {
+    const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
+    const entry = gameProgress[gameTitle];
+
+    if (entry && entry.inProgress) {
+        return { inProgress: true, currentAchievements: entry.currentAchievements || 0 };
+    }
+    return { inProgress: false, currentAchievements: 0 };
+}
+
+function toggleGameInProgress(gameTitle, isInProgress) {
+    const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
+
+    if (isInProgress) {
+        gameProgress[gameTitle] = { inProgress: true, currentAchievements: 0 };
+    } else {
+        delete gameProgress[gameTitle];
+    }
+
+    localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
+    renderGames();
+    updateStats();
+}
+
+function updateAchievementProgress(gameTitle, value, total) {
+    const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
+    const entry = gameProgress[gameTitle];
+
+    if (!entry || !entry.inProgress) return;
+
+    let numValue = parseInt(value, 10);
+    if (isNaN(numValue) || numValue < 0) numValue = 0;
+    if (numValue > total) numValue = total;
+
+    // Unlocking every achievement means the game is done - mark it completed
+    // instead of leaving it sitting at 100% "in progress" (this also clears
+    // the gameProgress entry for us)
+    if (total > 0 && numValue === total) {
+        toggleGameCompletion(gameTitle, true);
+        return;
+    }
+
+    entry.currentAchievements = numValue;
+    localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
+    renderGames();
+}
+
 function toggleGameCompletion(gameTitle, isCompleted) {
     const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
 
@@ -2821,6 +2935,13 @@ function toggleGameCompletion(gameTitle, isCompleted) {
             completionDate: mstDate.toISOString(),
             customTime: null
         };
+
+        // Finishing a game clears any in-progress achievement tracking
+        const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
+        if (gameProgress[gameTitle]) {
+            delete gameProgress[gameTitle];
+            localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
+        }
     } else {
         delete completedGames[gameTitle];
     }
@@ -3029,6 +3150,11 @@ function getCompletedGamesCount() {
     return Object.keys(completedGames).length;
 }
 
+function getInProgressGamesCount() {
+    const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
+    return Object.values(gameProgress).filter(entry => entry && entry.inProgress).length;
+}
+
 function getCompletedGamesFromFiltered() {
     const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
     return filteredGames.filter(gameTitle => completedGames[gameTitle] === true).length;
@@ -3037,6 +3163,38 @@ function getCompletedGamesFromFiltered() {
 searchInput.addEventListener('input', filterGames);
 sortSelect.addEventListener('change', filterGames);
 sortDirectionBtn.addEventListener('click', toggleSortDirection);
+
+const completedStatToggle = document.getElementById('completedStatToggle');
+if (completedStatToggle) {
+    completedStatToggle.addEventListener('click', () => {
+        showCompletedOnly = !showCompletedOnly;
+        completedStatToggle.classList.toggle('completed-stat-active', showCompletedOnly);
+
+        // These two filters are mutually exclusive - a game can't be both
+        // completed and in progress, so turning one on switches the other off
+        if (showCompletedOnly) {
+            showInProgressOnly = false;
+            inProgressStatToggle.classList.remove('inprogress-stat-active');
+        }
+
+        filterGames();
+    });
+}
+
+const inProgressStatToggle = document.getElementById('inProgressStatToggle');
+if (inProgressStatToggle) {
+    inProgressStatToggle.addEventListener('click', () => {
+        showInProgressOnly = !showInProgressOnly;
+        inProgressStatToggle.classList.toggle('inprogress-stat-active', showInProgressOnly);
+
+        if (showInProgressOnly) {
+            showCompletedOnly = false;
+            completedStatToggle.classList.remove('completed-stat-active');
+        }
+
+        filterGames();
+    });
+}
 
 // Set default sort to "100% Complete" with ascending direction (shortest first) and apply it
 sortSelect.value = 'completionistTime';

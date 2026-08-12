@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=13">
+    <link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body>
     <canvas id="confetti-canvas"></canvas>
@@ -29,6 +29,7 @@
                     <option value="releaseYear">Release Year</option>
                     <option value="completionDate">Completion Date</option>
                     <option value="myCompletionTime">My Completion Time</option>
+                    <option value="achievementsRemaining">Closest to Completion</option>
                 </select>
                 <button id="sortDirectionBtn" class="sort-direction-btn" title="Toggle sort direction">
                     <span class="sort-arrow">▲</span>
@@ -45,9 +46,13 @@
                 <span class="stat-label">Filtered:</span>
                 <span id="filteredGames">0</span>
             </div>
-            <div class="stat-item completed-stat">
+            <div class="stat-item completed-stat" id="completedStatToggle" title="Click to show only completed games">
                 <span class="stat-label">Completed:</span>
                 <span id="completedGames">0</span>
+            </div>
+            <div class="stat-item inprogress-stat" id="inProgressStatToggle" title="Click to show only in-progress games">
+                <span class="stat-label">In Progress:</span>
+                <span id="inProgressGames">0</span>
             </div>
         </div>
 
@@ -59,6 +64,6 @@
     <script src="manualGameData.js?v=9"></script>
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=11"></script>
-    <script src="script.js?v=27"></script>
+    <script src="script.js?v=34"></script>
 </body>
 </html>
