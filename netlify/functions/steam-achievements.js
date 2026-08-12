@@ -35,7 +35,10 @@ exports.handler = async (event) => {
         };
     }
 
-    const url = `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${appId}&key=${apiKey}&steamid=${steamId}`;
+    // l=english pulls back localized "name"/"description" per achievement
+    // (in addition to apiname/achieved/unlocktime) so the frontend can show
+    // remaining achievements without a second call to GetSchemaForGame.
+    const url = `https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${appId}&key=${apiKey}&steamid=${steamId}&l=english`;
 
     try {
         const res = await fetch(url);
@@ -54,10 +57,17 @@ exports.handler = async (event) => {
         }
 
         const unlocked = stats.achievements.filter((a) => a.achieved === 1).length;
+        const achievements = stats.achievements.map((a) => ({
+            apiname: a.apiname,
+            achieved: a.achieved === 1,
+            name: a.name || a.apiname,
+            description: a.description || '',
+        }));
+
         return {
             statusCode: 200,
             headers: CORS_HEADERS,
-            body: JSON.stringify({ available: true, unlocked }),
+            body: JSON.stringify({ available: true, unlocked, achievements }),
         };
     } catch (err) {
         return {

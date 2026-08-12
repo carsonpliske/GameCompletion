@@ -4,11 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=21">
+    <link rel="stylesheet" href="styles.css?v=28">
 </head>
 <body>
     <canvas id="confetti-canvas"></canvas>
     <div id="floatingBackground" class="floating-background"></div>
+
+    <button id="todoSidebarToggle" class="todo-sidebar-toggle" title="Toggle Active Games list" onclick="toggleTodoSidebar()">🎯</button>
+    <aside id="todoSidebar" class="todo-sidebar">
+        <div class="todo-sidebar-header">
+            <h2>🎯 Active Games <span id="todoCount" class="todo-count">0</span></h2>
+            <button class="todo-sidebar-close" title="Hide this panel" onclick="toggleTodoSidebar()">✕</button>
+        </div>
+        <div id="todoList" class="todo-list">
+            <!-- Populated by renderTodoSidebar() -->
+        </div>
+    </aside>
+
     <div class="container">
         <header>
             <h1><img src="https://upload.wikimedia.org/wikipedia/commons/8/83/Steam_icon_logo.svg" alt="Steam Logo" style="height: 1em; vertical-align: middle; margin-right: 0.3em;"> Steam Game Organizer</h1>
@@ -68,6 +80,6 @@
     <script src="manualGameData.js?v=9"></script>
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=12"></script>
-    <script src="script.js?v=39"></script>
+    <script src="script.js?v=43"></script>
 </body>
 </html>

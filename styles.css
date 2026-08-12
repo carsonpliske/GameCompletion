@@ -231,6 +231,7 @@ header p {
 }
 
 .game-card {
+    position: relative; /* anchors .achievement-fill */
     background: #2c3e50;
     border-radius: 8px;
     overflow: hidden;
@@ -239,6 +240,11 @@ header p {
     display: flex;
     border: 1px solid #34495e;
     min-height: 120px;
+    /* Without this, flex/grid items default to min-width:auto, so at
+       narrow viewports the row can't shrink below its content's natural
+       width - it silently overflows and gets clipped by overflow:hidden
+       above instead of wrapping/shrinking like the rest of the layout. */
+    min-width: 0;
 }
 
 .game-card:hover {
@@ -255,6 +261,8 @@ header p {
 }
 
 .game-image-container {
+    position: relative;
+    z-index: 1; /* paint above .achievement-fill */
     display: flex;
     flex-direction: column;
     border-right: 1px solid #495057;
@@ -271,7 +279,13 @@ header p {
     width: 140px;
     min-width: 140px;
     height: 80px;
-    background: #34495e;
+    /* Transparent (not a hardcoded color) so the letterbox strip left by
+       "contain" below always shows whatever .game-card's background
+       actually is right now - the default slate, the green completed
+       gradient, the orange in-progress gradient, or the rising green
+       achievement-fill - instead of freezing on one fixed shade that only
+       matched the default state. */
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -281,7 +295,14 @@ header p {
 .game-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    /* Steam header images are ~460x215 (2.14:1), wider than this 140x80
+       (1.75:1) box - "cover" would crop ~40px combined off the left/right
+       edges at full res, slicing off any title text sitting near them.
+       "contain" shows the whole image with a thin letterbox instead. */
+    object-fit: contain;
+    /* Anchor the letterbox gap to the bottom instead of splitting it
+       above and below - keeps the image flush with the top of the box. */
+    object-position: center top;
     display: block;
 }
 
@@ -291,7 +312,10 @@ header p {
 }
 
 .game-content {
+    position: relative;
+    z-index: 1; /* paint above .achievement-fill */
     flex: 1;
+    min-width: 0;
     padding: 15px;
     display: flex;
     flex-direction: column;
@@ -336,6 +360,7 @@ header p {
 
 .game-header .game-title {
     flex: 1;
+    min-width: 0;
     margin-right: 10px;
 }
 
@@ -443,6 +468,44 @@ header p {
     opacity: 1;
 }
 
+/* Add-to-Active-Games star: floats over the card's thumbnail image
+   instead of sitting in the header row, so it doesn't compete with the
+   completion/in-progress checkboxes for space next to the title (that
+   used to push titles from 2 lines to 3). */
+.todo-toggle-overlay {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.todo-toggle-overlay:hover {
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffd700;
+}
+
+.todo-toggle-overlay:active {
+    transform: scale(0.9);
+}
+
+.todo-toggle-overlay.active {
+    background: rgba(184, 150, 12, 0.85);
+    color: #ffd700;
+}
+
 /* Completed game styling */
 .game-completed {
     background: linear-gradient(135deg, #2d5a3d 0%, #1e3d2a 100%);
@@ -465,6 +528,14 @@ header p {
 .game-in-progress .game-title {
     color: #f5cd83;
     font-weight: 600;
+}
+
+/* When the whole-card achievement fill is doing the progress-telling
+   (see .achievement-fill), drop the flat orange tint underneath it so
+   the two don't mix into a muddy color - keep the orange border/title
+   so "in progress" is still identifiable at a glance. */
+.game-in-progress.game-has-fill {
+    background: #2c3e50;
 }
 
 .completed-stat {
@@ -642,18 +713,20 @@ header p {
     background: #34495e;
 }
 
-.achievement-progress-bar-container {
-    width: 140px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.achievement-progress-bar-fill {
-    height: 100%;
-    background: #27ae60;
-    transition: width 0.3s ease;
+/* Whole-card achievement fill: rises from the bottom of the card as
+   achievement progress increases, instead of a small separate bar.
+   Positioned behind .game-image-container/.game-content (see their
+   z-index below) and clipped to the card's rounded corners by
+   .game-card's own overflow:hidden. */
+.achievement-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    background: linear-gradient(180deg, rgba(46, 204, 113, 0.35) 0%, rgba(39, 174, 96, 0.55) 100%);
+    transition: height 0.6s ease;
+    pointer-events: none;
 }
 
 /* Completion date below game image */
@@ -741,21 +814,80 @@ header p {
     }
 }
 
-@keyframes goldenGlow {
-    0%, 100% {
+/* Sweeps through a full spectrum before settling back into the same
+   green .game-completed rests at - the "goes back to green" moment
+   right after hitting 100% achievements. */
+@keyframes rainbowGlow {
+    0% {
         border-color: #27ae60;
         box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
     }
-    50% {
-        border-color: #ffd700;
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
-                    0 4px 12px rgba(39, 174, 96, 0.4);
+    12% {
+        border-color: #e74c3c;
+        box-shadow: 0 0 22px rgba(231, 76, 60, 0.6), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    28% {
+        border-color: #f39c12;
+        box-shadow: 0 0 22px rgba(243, 156, 18, 0.6), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    44% {
+        border-color: #f1c40f;
+        box-shadow: 0 0 22px rgba(241, 196, 15, 0.6), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    60% {
+        border-color: #2ecc71;
+        box-shadow: 0 0 22px rgba(46, 204, 113, 0.6), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    76% {
+        border-color: #3498db;
+        box-shadow: 0 0 22px rgba(52, 152, 219, 0.6), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    92% {
+        border-color: #9b59b6;
+        box-shadow: 0 0 22px rgba(155, 89, 182, 0.6), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+        border-color: #27ae60;
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+    }
+}
+
+/* Sweeps the card's actual fill color through the same spectrum as
+   rainbowGlow above (kept on matching % stops so border and fill land on
+   the same hue at the same moment), ending on the exact gradient
+   .game-completed rests at - so when the animation hands back to that
+   rule there's no visible pop, just the glow settling into place. */
+@keyframes rainbowFill {
+    0% {
+        background: linear-gradient(135deg, #2d5a3d 0%, #1e3d2a 100%);
+    }
+    12% {
+        background: linear-gradient(135deg, #e74c3c 0%, #78281f 100%);
+    }
+    28% {
+        background: linear-gradient(135deg, #f39c12 0%, #7e5109 100%);
+    }
+    44% {
+        background: linear-gradient(135deg, #f1c40f 0%, #7d6608 100%);
+    }
+    60% {
+        background: linear-gradient(135deg, #2ecc71 0%, #145a32 100%);
+    }
+    76% {
+        background: linear-gradient(135deg, #3498db 0%, #1b4f72 100%);
+    }
+    92% {
+        background: linear-gradient(135deg, #9b59b6 0%, #4a235a 100%);
+    }
+    100% {
+        background: linear-gradient(135deg, #2d5a3d 0%, #1e3d2a 100%);
     }
 }
 
 .game-card.celebrating {
     animation: celebrationPulse 0.6s ease-out,
-               goldenGlow 1.5s ease-in-out;
+               rainbowGlow 1.5s ease-in-out,
+               rainbowFill 1.5s ease-in-out;
 }
 
 /* Confetti canvas */
@@ -827,5 +959,287 @@ body.shake {
     100% {
         transform: translateX(-50%) translateY(-100px);
         opacity: 0;
+    }
+}
+
+/* Active Games ("To-Do") sidebar */
+.todo-sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 120px;
+    left: 0;
+    z-index: 20;
+    background: #2c3e50;
+    color: #ffd700;
+    border: 1px solid #34495e;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+.todo-sidebar {
+    position: fixed;
+    top: 90px;
+    left: 20px;
+    width: 270px;
+    max-height: calc(100vh - 110px);
+    display: flex;
+    flex-direction: column;
+    background: rgba(30, 41, 54, 0.97);
+    border: 1px solid #34495e;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    z-index: 15;
+    overflow: hidden;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.todo-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid #34495e;
+    flex-shrink: 0;
+}
+
+.todo-sidebar-header h2 {
+    font-size: 1rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.todo-count {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+}
+
+.todo-sidebar-close {
+    display: none;
+    background: none;
+    border: none;
+    color: #bdc3c7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 2px 6px;
+}
+
+.todo-sidebar-close:hover {
+    color: white;
+}
+
+.todo-list {
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.todo-empty {
+    padding: 16px 8px;
+    color: #95a5a6;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.todo-item {
+    background: #2c3e50;
+    border: 1px solid #34495e;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.todo-item.expanded {
+    border-color: #ffd700;
+}
+
+.todo-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.todo-item-header:hover {
+    background: rgba(255,255,255,0.04);
+}
+
+.todo-item-thumb {
+    width: 48px;
+    height: 27px;
+    min-width: 48px;
+    border-radius: 4px;
+    overflow: hidden;
+    /* Matches .todo-item's own background - see .game-image */
+    background: #2c3e50;
+}
+
+.todo-item-thumb img {
+    width: 100%;
+    height: 100%;
+    /* Same reasoning as .game-image img - avoid cropping title text off
+       the left/right edges of the source header image. */
+    object-fit: contain;
+    object-position: center top;
+    display: block;
+}
+
+.todo-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.todo-item-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.todo-item-progress {
+    font-size: 0.72rem;
+    color: #bdc3c7;
+    margin-top: 2px;
+}
+
+.todo-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.todo-sync-btn,
+.todo-remove-btn {
+    background: none;
+    border: none;
+    color: #bdc3c7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 3px 5px;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.todo-sync-btn:hover:not(:disabled) {
+    background: rgba(102, 192, 244, 0.2);
+    color: #66c0f4;
+}
+
+.todo-sync-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.todo-remove-btn:hover {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}
+
+.todo-expand-arrow {
+    font-size: 0.6rem;
+    color: #7f8c8d;
+    flex-shrink: 0;
+}
+
+.todo-item-details {
+    border-top: 1px solid #34495e;
+    padding: 8px 10px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.todo-detail-status {
+    font-size: 0.78rem;
+    color: #95a5a6;
+    text-align: center;
+    padding: 8px 4px;
+    line-height: 1.4;
+}
+
+.todo-detail-error {
+    color: #e74c3c;
+}
+
+.todo-detail-done {
+    color: #27ae60;
+}
+
+.todo-achievement-list {
+    list-style: none;
+}
+
+.todo-achievement {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.todo-achievement:last-child {
+    border-bottom: none;
+}
+
+.todo-achievement-name {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #ffd700;
+}
+
+.todo-achievement-desc {
+    display: block;
+    font-size: 0.72rem;
+    color: #bdc3c7;
+    margin-top: 2px;
+    line-height: 1.35;
+}
+
+/* Wide screens: enough free space beside the centered container to pin the
+   sidebar open permanently, no toggle needed */
+@media (min-width: 1850px) {
+    .todo-sidebar {
+        transform: none !important;
+        opacity: 1 !important;
+    }
+}
+
+/* Narrower screens: sidebar becomes a slide-in drawer over the page,
+   opened via the tab button fixed to the left edge */
+@media (max-width: 1849px) {
+    .todo-sidebar-toggle {
+        display: block;
+    }
+
+    .todo-sidebar-close {
+        display: block;
+    }
+
+    .todo-sidebar {
+        transform: translateX(-120%);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .todo-sidebar.open {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .todo-sidebar {
+        width: calc(100vw - 40px);
     }
 }

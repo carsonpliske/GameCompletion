@@ -1656,7 +1656,8 @@ const steamImageCdnOverrides = {
     4249120: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249120/a882eb9852c45108a0e4d725cd15132387ab038e/header.jpg",
     4249110: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249110/db95a4fbb11b56b6dc065dc0d6c662dab47498e5/header.jpg",
     3230400: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3230400/979a5bffcde6f49d7e56ca9db6980256d3a96ad6/header.jpg",
-    3929740: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3929740/fd782a203ee11a3a61f1b2398fc439aa6d1f8640/header.jpg"
+    3929740: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3929740/fd782a203ee11a3a61f1b2398fc439aa6d1f8640/header.jpg",
+    2807960: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/c12d12ce3c7d217398d3fcad77427bfc9d57c570/header.jpg"
 };
 
 function getSteamImageUrl(appId, type = 'header') {
@@ -2502,6 +2503,30 @@ if (!gamesListContainer) console.error('gamesList element not found!');
 if (!totalGamesSpan) console.error('totalGames element not found!');
 if (!filteredGamesSpan) console.error('filteredGames element not found!');
 
+// --- Active Games ("To-Do") sidebar state ---
+// Which game's achievement list is currently expanded in the sidebar (only one at a time)
+let expandedTodoTitle = null;
+// Per-game achievement detail cache: { [title]: { achievements: [...] } | { error: '...' } }
+const todoAchievementsCache = {};
+const todoAchievementsFetching = new Set();
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function showInfoToast(html, durationMs = 6000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = html;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), durationMs);
+}
+
 function formatTime(hours) {
     if (!hours) return 'Unknown';
     if (hours < 1) return `${Math.round(hours * 60)} minutes`;
@@ -2538,10 +2563,22 @@ function renderGames() {
         // Define completion status first
         const isCompleted = getGameCompletionStatus(game.title);
         const completedClass = isCompleted ? 'game-completed' : '';
-        const inProgressClass = !isCompleted && getGameProgressData(game.title).inProgress ? 'game-in-progress' : '';
+        const progressData = getGameProgressData(game.title);
+        const inProgressClass = !isCompleted && progressData.inProgress ? 'game-in-progress' : '';
         const gameId = game.title.replace(/[^a-zA-Z0-9]/g, '');
 
-        gameCard.className = `game-card ${completedClass} ${inProgressClass}`.trim();
+        // Get achievement data
+        const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
+        const isTodo = isGameTodo(game.title);
+
+        // Whole-card achievement fill: only for in-progress games we can
+        // actually compute a percentage for. Takes over the "in progress"
+        // visual treatment from the plain orange tint below.
+        const hasFill = !isCompleted && progressData.inProgress && achievementData.hasAchievements && achievementData.count > 0;
+        const fillClass = hasFill ? 'game-has-fill' : '';
+        const fillPercent = hasFill ? Math.min(100, Math.round(progressData.currentAchievements / achievementData.count * 100)) : 0;
+
+        gameCard.className = `game-card ${completedClass} ${inProgressClass} ${fillClass}`.trim();
 
         const timeCategory = getTimeCategory(game.timeToBeat);
         const timeBadgeClass = `time-badge time-${timeCategory}`;
@@ -2554,15 +2591,17 @@ function renderGames() {
             ? `<img src="${steamUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${fallbackUrl}'; this.onerror=function(){this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>';}">`
             : `<img src="${fallbackUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>'">`;
 
-        // Get achievement data
-        const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
-        const progressData = getGameProgressData(game.title);
-
         const steamAppId = getSteamAppId(game.title);
         const steamStoreUrl = steamAppId ? `https://store.steampowered.com/app/${steamAppId}` : '#';
 
         gameCard.innerHTML = `
+            ${hasFill ? `<div class="achievement-fill" style="height: ${fillPercent}%"></div>` : ''}
             <div class="game-image-container">
+                ${!isCompleted ? `
+                    <button type="button" class="todo-toggle-overlay ${isTodo ? 'active' : ''}"
+                            title="${isTodo ? 'Remove from Active Games' : 'Add to Active Games'}"
+                            onclick="toggleGameTodo('${game.title.replace(/'/g, "\\'")}')">★</button>
+                ` : ''}
                 <a class="game-image-link" href="${steamStoreUrl}" target="_blank" rel="noopener" title="View on Steam Store">
                     <div class="game-image">
                         ${imageHtml}
@@ -2585,11 +2624,6 @@ function renderGames() {
                             <span class="achievement-count">${achievementData.count}</span>
                         `}
                     </div>
-                    ${progressData.inProgress ? `
-                        <div class="achievement-progress-bar-container" title="${progressData.currentAchievements}/${achievementData.count} achievements">
-                            <div class="achievement-progress-bar-fill" style="width: ${Math.round(progressData.currentAchievements / achievementData.count * 100)}%;"></div>
-                        </div>
-                    ` : ''}
                 ` : ''}
                 ${isCompleted && getGameCompletionData(game.title).completionDate ? `
                     <div class="completion-date"
@@ -2897,6 +2931,7 @@ function toggleGameInProgress(gameTitle, isInProgress) {
     renderGames();
     updateStats();
     updateFloatingImageHighlight(gameTitle);
+    renderTodoSidebar();
 }
 
 function updateAchievementProgress(gameTitle, value, total) {
@@ -2920,6 +2955,234 @@ function updateAchievementProgress(gameTitle, value, total) {
     entry.currentAchievements = numValue;
     localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
     renderGames();
+    renderTodoSidebar();
+}
+
+// --- Active Games ("To-Do") list ---
+function getTodoGames() {
+    return JSON.parse(localStorage.getItem('todoGames') || '[]');
+}
+
+function isGameTodo(gameTitle) {
+    return getTodoGames().includes(gameTitle);
+}
+
+function toggleGameTodo(gameTitle) {
+    let todo = getTodoGames();
+    if (todo.includes(gameTitle)) {
+        todo = todo.filter(t => t !== gameTitle);
+        if (expandedTodoTitle === gameTitle) expandedTodoTitle = null;
+    } else {
+        todo.push(gameTitle);
+    }
+    localStorage.setItem('todoGames', JSON.stringify(todo));
+    renderGames();
+    renderTodoSidebar();
+}
+
+function toggleTodoSidebar() {
+    const sidebar = document.getElementById('todoSidebar');
+    if (sidebar) sidebar.classList.toggle('open');
+}
+
+function toggleTodoExpand(gameTitle) {
+    expandedTodoTitle = (expandedTodoTitle === gameTitle) ? null : gameTitle;
+    renderTodoSidebar();
+}
+
+// Fetches the full per-achievement list (name/description/achieved) for the
+// sidebar's expanded detail view. Separate from syncGameAchievements below
+// because expanding a game shouldn't also mutate its completion/progress
+// state - only an explicit sync should do that.
+async function fetchTodoAchievements(gameTitle) {
+    if (todoAchievementsFetching.has(gameTitle)) return;
+    todoAchievementsFetching.add(gameTitle);
+
+    const appId = getSteamAppId(gameTitle);
+    if (!appId) {
+        todoAchievementsCache[gameTitle] = { error: 'No Steam App ID on file for this game' };
+        todoAchievementsFetching.delete(gameTitle);
+        if (expandedTodoTitle === gameTitle) renderTodoSidebar();
+        return;
+    }
+
+    try {
+        const res = await fetch(`/.netlify/functions/steam-achievements?appid=${appId}`);
+        const data = await res.json();
+        if (!res.ok || !data.available) {
+            todoAchievementsCache[gameTitle] = { error: data.reason || data.error || 'Achievement data unavailable' };
+        } else {
+            todoAchievementsCache[gameTitle] = { achievements: data.achievements || [] };
+        }
+    } catch (e) {
+        todoAchievementsCache[gameTitle] = { error: e.message };
+    } finally {
+        todoAchievementsFetching.delete(gameTitle);
+        if (expandedTodoTitle === gameTitle) renderTodoSidebar();
+    }
+}
+
+function renderTodoAchievementDetails(gameTitle) {
+    const cached = todoAchievementsCache[gameTitle];
+
+    if (!cached) {
+        fetchTodoAchievements(gameTitle); // fire and forget - re-renders itself when done
+        return `<div class="todo-detail-status">Loading remaining achievements…</div>`;
+    }
+
+    if (cached.error) {
+        return `<div class="todo-detail-status todo-detail-error">Couldn't load achievement details: ${escapeHtml(cached.error)}</div>`;
+    }
+
+    const locked = cached.achievements.filter(a => !a.achieved);
+    if (locked.length === 0) {
+        return `<div class="todo-detail-status todo-detail-done">🎉 All tracked achievements are unlocked!</div>`;
+    }
+
+    return `<ul class="todo-achievement-list">
+        ${locked.map(a => `
+            <li class="todo-achievement">
+                <span class="todo-achievement-name">${escapeHtml(a.name)}</span>
+                ${a.description ? `<span class="todo-achievement-desc">${escapeHtml(a.description)}</span>` : ''}
+            </li>
+        `).join('')}
+    </ul>`;
+}
+
+function renderTodoSidebar() {
+    const listEl = document.getElementById('todoList');
+    const countEl = document.getElementById('todoCount');
+    if (!listEl) return;
+
+    // Active list only makes sense for games still being worked toward -
+    // drop anything that got marked completed since it was added
+    const todo = getTodoGames().filter(title => gameDatabase[title] && !getGameCompletionStatus(title));
+
+    if (countEl) countEl.textContent = todo.length;
+
+    if (todo.length === 0) {
+        listEl.innerHTML = '<div class="todo-empty">No active games yet. Click the ☆ on any game card to add it here.</div>';
+        return;
+    }
+
+    listEl.innerHTML = todo.map(title => {
+        const game = gameDatabase[title];
+        const achData = getAchievementData(title);
+        const progress = getGameProgressData(title);
+        const escTitle = title.replace(/'/g, "\\'");
+        const steamUrl = getSteamImageUrl(game.steamAppId, 'header');
+        const isExpanded = expandedTodoTitle === title;
+        const remaining = achData.hasAchievements ? Math.max(achData.count - progress.currentAchievements, 0) : null;
+
+        return `
+            <div class="todo-item ${isExpanded ? 'expanded' : ''}">
+                <div class="todo-item-header" onclick="toggleTodoExpand('${escTitle}')">
+                    <div class="todo-item-thumb">
+                        ${steamUrl ? `<img src="${steamUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+                    </div>
+                    <div class="todo-item-info">
+                        <div class="todo-item-title">${escapeHtml(title)}</div>
+                        <div class="todo-item-progress">
+                            ${achData.hasAchievements
+                                ? `🏆 ${progress.currentAchievements}/${achData.count}${remaining !== null ? (remaining > 0 ? ` &middot; ${remaining} left` : ' &middot; complete!') : ''}`
+                                : 'No achievements tracked'}
+                        </div>
+                    </div>
+                    <div class="todo-item-actions">
+                        ${achData.hasAchievements ? `
+                            <button type="button" class="todo-sync-btn" title="Sync just this game's achievements from Steam" onclick="event.stopPropagation(); syncSingleTodoGame(this, '${escTitle}')">🔄</button>
+                        ` : ''}
+                        <button type="button" class="todo-remove-btn" title="Remove from Active Games" onclick="event.stopPropagation(); toggleGameTodo('${escTitle}')">✕</button>
+                    </div>
+                    <span class="todo-expand-arrow">${isExpanded ? '▲' : '▼'}</span>
+                </div>
+                ${isExpanded ? `<div class="todo-item-details">${achData.hasAchievements ? renderTodoAchievementDetails(title) : '<div class="todo-detail-status">This game has no tracked Steam achievements.</div>'}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// Syncs one game's achievement progress from Steam and updates local state
+// (completion / in-progress tracking + the sidebar's achievement detail
+// cache). Shared by the full "Sync with Steam" sweep and the sidebar's
+// per-game sync button so both stay in sync (pun intended) with the same logic.
+async function syncGameAchievements(gameTitle, ownedGames = {}) {
+    const appId = getSteamAppId(gameTitle);
+    if (!appId) return { ok: false, reason: 'No Steam App ID on file for this game' };
+
+    const res = await fetch(`/.netlify/functions/steam-achievements?appid=${appId}`);
+    const data = await res.json();
+
+    if (!res.ok || !data.available) {
+        return { ok: false, reason: data.reason || data.error || 'Achievement data unavailable' };
+    }
+
+    const total = getAchievementData(gameTitle).count;
+    const unlocked = data.unlocked;
+    let status = 'unchanged';
+
+    if (total > 0 && unlocked >= total) {
+        // toggleGameCompletion (not updateAchievementProgress) - this game
+        // may never have been manually flagged in-progress, and
+        // updateAchievementProgress requires an existing entry to do anything
+        toggleGameCompletion(gameTitle, true);
+        const hours = ownedGames[appId];
+        if (hours !== undefined) {
+            updateCustomTime(gameTitle, hours);
+        }
+        status = 'completed';
+    } else if (unlocked > 0) {
+        const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
+        gameProgress[gameTitle] = { inProgress: true, currentAchievements: unlocked };
+        localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
+        updateFloatingImageHighlight(gameTitle);
+        status = 'inProgress';
+    }
+
+    todoAchievementsCache[gameTitle] = { achievements: data.achievements || [] };
+    return { ok: true, status, unlocked, total };
+}
+
+async function syncSingleTodoGame(btn, gameTitle) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const original = btn.textContent;
+    btn.textContent = '⏳';
+
+    try {
+        // Only matters if this sync happens to finish the game (see
+        // syncGameAchievements) - fetched every time since we don't know
+        // that until the achievement check comes back. Best-effort: a
+        // failure here shouldn't block the achievement sync itself, it
+        // just means "My Time To Complete" won't auto-fill this time.
+        let ownedGames = {};
+        try {
+            const ownedRes = await fetch('/.netlify/functions/steam-owned-games');
+            const ownedData = await ownedRes.json();
+            if (ownedRes.ok && ownedData.available) {
+                ownedGames = ownedData.games || {};
+            }
+        } catch (e) {
+            // ignore - playtime auto-fill is a bonus, not required for sync to succeed
+        }
+
+        const result = await syncGameAchievements(gameTitle, ownedGames);
+        if (!result.ok) {
+            showInfoToast(`⚠️ Couldn't sync ${escapeHtml(gameTitle)}: ${escapeHtml(result.reason)}`);
+        } else {
+            filterGames(); // re-renders the main list
+            renderTodoSidebar();
+            const msg = result.status === 'completed'
+                ? `🎉 ${escapeHtml(gameTitle)} complete!`
+                : `✅ ${escapeHtml(gameTitle)}: ${result.unlocked}/${result.total} achievements`;
+            showInfoToast(msg);
+        }
+    } catch (e) {
+        showInfoToast(`⚠️ Couldn't sync ${escapeHtml(gameTitle)}: ${escapeHtml(e.message)}`);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+    }
 }
 
 async function syncWithSteam() {
@@ -2960,49 +3223,25 @@ async function syncWithSteam() {
         checked++;
         if (syncStatus) syncStatus.textContent = `Syncing ${checked}/${candidates.length}...`;
 
-        const appId = getSteamAppId(title);
-        if (!appId) {
-            failed++;
-        } else {
-            try {
-                const res = await fetch(`/.netlify/functions/steam-achievements?appid=${appId}`);
-                const data = await res.json();
-
-                if (!res.ok || !data.available) {
-                    failed++;
-                } else {
-                    const unlocked = data.unlocked;
-                    const total = getAchievementData(title).count;
-
-                    if (total > 0 && unlocked >= total) {
-                        // toggleGameCompletion (not updateAchievementProgress) -
-                        // this game may never have been manually flagged
-                        // in-progress, and updateAchievementProgress requires
-                        // an existing entry to do anything
-                        toggleGameCompletion(title, true);
-                        const hours = ownedGames[appId];
-                        if (hours !== undefined) {
-                            updateCustomTime(title, hours);
-                        }
-                        newlyCompleted++;
-                    } else if (unlocked > 0) {
-                        const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
-                        gameProgress[title] = { inProgress: true, currentAchievements: unlocked };
-                        localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
-                        updateFloatingImageHighlight(title);
-                        newlyInProgress++;
-                    }
-                    // unlocked === 0: not started, leave untouched
-                }
-            } catch (e) {
+        try {
+            const result = await syncGameAchievements(title, ownedGames);
+            if (!result.ok) {
                 failed++;
+            } else if (result.status === 'completed') {
+                newlyCompleted++;
+            } else if (result.status === 'inProgress') {
+                newlyInProgress++;
             }
+            // status === 'unchanged': not started, leave untouched
+        } catch (e) {
+            failed++;
         }
 
         await new Promise(r => setTimeout(r, 400));
     }
 
     filterGames(); // re-renders and re-applies whatever filter is active
+    renderTodoSidebar();
 
     syncBtn.disabled = false;
     syncBtn.textContent = 'Sync with Steam';
@@ -3010,11 +3249,7 @@ async function syncWithSteam() {
 
     const summaryParts = [`Synced ${checked} games`, `${newlyCompleted} newly completed`, `${newlyInProgress} now in progress`];
     if (failed) summaryParts.push(`${failed} failed`);
-    const summaryToast = document.createElement('div');
-    summaryToast.className = 'toast-notification';
-    summaryToast.innerHTML = `⚡ ${summaryParts.join(' — ')}`;
-    document.body.appendChild(summaryToast);
-    setTimeout(() => summaryToast.remove(), 6000);
+    showInfoToast(`⚡ ${summaryParts.join(' — ')}`);
 }
 
 function toggleGameCompletion(gameTitle, isCompleted) {
@@ -3037,16 +3272,28 @@ function toggleGameCompletion(gameTitle, isCompleted) {
             delete gameProgress[gameTitle];
             localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
         }
+
+        // A finished game is no longer "active" - drop it off the To-Do sidebar
+        const todo = getTodoGames();
+        if (todo.includes(gameTitle)) {
+            localStorage.setItem('todoGames', JSON.stringify(todo.filter(t => t !== gameTitle)));
+            if (expandedTodoTitle === gameTitle) expandedTodoTitle = null;
+        }
     } else {
         delete completedGames[gameTitle];
     }
 
     localStorage.setItem('completedGames', JSON.stringify(completedGames));
 
-    // Update the visual state of the game card
-    updateGameCardVisuals(gameTitle, isCompleted);
     updateStats();
-    renderGames(); // Re-render to show/hide date and custom time field
+    renderGames(); // Re-render to show/hide date and custom time field - must
+                    // happen before celebrateCompletion() below, since that
+                    // function needs to find and animate the freshly-rendered card
+    renderTodoSidebar();
+
+    if (isCompleted) {
+        celebrateCompletion(gameTitle);
+    }
 
     // Update floating background highlight
     updateFloatingImageHighlight(gameTitle);
@@ -3114,32 +3361,27 @@ function editCustomTime(event, gameTitle, currentTime) {
     }
 }
 
-function updateGameCardVisuals(gameTitle, isCompleted) {
-    // Find the game card and update its visual state
+// Called after renderGames() has already rebuilt the card list with the
+// completed state baked in (classes, border, etc.) - this only adds the
+// one-shot celebration flourish on top: the rainbow glow pulse (see
+// .celebrating/rainbowGlow in styles.css), confetti, and the toast.
+// Has to run post-render because renderGames() replaces every card's DOM
+// node wholesale; adding .celebrating before that render would just get
+// thrown away with the old node before the browser ever paints it.
+function celebrateCompletion(gameTitle) {
     const gameCards = document.querySelectorAll('.game-card');
     gameCards.forEach(card => {
         const titleElement = card.querySelector('.game-title');
         if (titleElement && titleElement.textContent === gameTitle) {
-            if (isCompleted) {
-                card.classList.add('game-completed');
+            card.classList.add('celebrating');
+            setTimeout(() => {
+                card.classList.remove('celebrating');
+            }, 1500);
 
-                // Trigger celebration animation
-                card.classList.add('celebrating');
-                setTimeout(() => {
-                    card.classList.remove('celebrating');
-                }, 1500);
+            const rect = card.getBoundingClientRect();
+            launchConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
 
-                // Launch confetti from the card position
-                const rect = card.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                launchConfetti(centerX, centerY);
-
-                // Show toast notification
-                showToast(gameTitle);
-            } else {
-                card.classList.remove('game-completed');
-            }
+            showToast(gameTitle);
         }
     });
 }
@@ -3326,6 +3568,7 @@ console.log('gameDatabase keys:', Object.keys(gameDatabase).length);
 
 updateStats();
 renderGames();
+renderTodoSidebar();
 
 console.log(`Loaded ${currentGames.length} games!`);
 
