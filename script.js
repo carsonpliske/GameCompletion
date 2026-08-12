@@ -2540,9 +2540,10 @@ function renderGames() {
         // Define completion status first
         const isCompleted = getGameCompletionStatus(game.title);
         const completedClass = isCompleted ? 'game-completed' : '';
+        const inProgressClass = !isCompleted && getGameProgressData(game.title).inProgress ? 'game-in-progress' : '';
         const gameId = game.title.replace(/[^a-zA-Z0-9]/g, '');
 
-        gameCard.className = `game-card ${completedClass}`;
+        gameCard.className = `game-card ${completedClass} ${inProgressClass}`.trim();
 
         const timeCategory = getTimeCategory(game.timeToBeat);
         const timeBadgeClass = `time-badge time-${timeCategory}`;
@@ -2897,6 +2898,7 @@ function toggleGameInProgress(gameTitle, isInProgress) {
     localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
     renderGames();
     updateStats();
+    updateFloatingImageHighlight(gameTitle);
 }
 
 function updateAchievementProgress(gameTitle, value, total) {
@@ -2954,7 +2956,7 @@ function toggleGameCompletion(gameTitle, isCompleted) {
     renderGames(); // Re-render to show/hide date and custom time field
 
     // Update floating background highlight
-    updateFloatingImageHighlight(gameTitle, isCompleted);
+    updateFloatingImageHighlight(gameTitle);
 }
 
 function formatCompletionDate(isoDateString) {
@@ -3291,16 +3293,17 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     document.body.appendChild(sortingButton);
 }
 
-// Update floating background image highlight when a game's completion status changes
-function updateFloatingImageHighlight(gameTitle, isCompleted) {
+// Update floating background image highlight when a game's completion or
+// in-progress status changes
+function updateFloatingImageHighlight(gameTitle) {
+    const isCompleted = getGameCompletionStatus(gameTitle);
+    const isInProgress = !isCompleted && getGameProgressData(gameTitle).inProgress;
+
     const floatingImages = document.querySelectorAll('.floating-image[data-game-name]');
     floatingImages.forEach(img => {
         if (img.dataset.gameName === gameTitle) {
-            if (isCompleted) {
-                img.classList.add('completed-highlight');
-            } else {
-                img.classList.remove('completed-highlight');
-            }
+            img.classList.toggle('completed-highlight', isCompleted);
+            img.classList.toggle('inprogress-highlight', isInProgress);
         }
     });
 }
@@ -3352,9 +3355,12 @@ function createFloatingBackgrounds() {
             img.dataset.src = getSteamImageUrl(game.id, 'header');
             img.fetchPriority = 'low'; // decorative background, defer to main content images
 
-            // Check if this game is completed and add highlight
-            if (getGameCompletionStatus(game.name)) {
+            // Check if this game is completed or in progress and add highlight
+            const isCompleted = getGameCompletionStatus(game.name);
+            if (isCompleted) {
                 img.classList.add('completed-highlight');
+            } else if (getGameProgressData(game.name).inProgress) {
+                img.classList.add('inprogress-highlight');
             }
 
             // Handle image load errors to avoid gaps
