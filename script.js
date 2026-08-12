@@ -3177,6 +3177,15 @@ if (completedStatToggle) {
         if (showCompletedOnly) {
             showInProgressOnly = false;
             inProgressStatToggle.classList.remove('inprogress-stat-active');
+
+            // "Closest to Completion" only shows in-progress games by design,
+            // which would conflict with showing completed-only games and
+            // leave the list empty - fall back to a neutral sort
+            if (sortSelect.value === 'achievementsRemaining') {
+                sortSelect.value = 'completionistTime';
+                sortDirection = 'asc';
+                updateSortDirectionArrow();
+            }
         }
 
         filterGames();
@@ -3192,6 +3201,19 @@ if (inProgressStatToggle) {
         if (showInProgressOnly) {
             showCompletedOnly = false;
             completedStatToggle.classList.remove('completed-stat-active');
+
+            // Also sort by closest-to-completion, so this tab shows fewest
+            // achievements remaining first, not whatever sort was active before
+            sortSelect.value = 'achievementsRemaining';
+            sortDirection = 'asc';
+            updateSortDirectionArrow();
+        } else if (sortSelect.value === 'achievementsRemaining') {
+            // Undo the sort we applied when this tab was turned on, otherwise
+            // its own in-progress-only filter keeps the list stuck even
+            // though the tab itself is now off
+            sortSelect.value = 'completionistTime';
+            sortDirection = 'asc';
+            updateSortDirectionArrow();
         }
 
         filterGames();
