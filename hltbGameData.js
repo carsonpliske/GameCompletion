@@ -142,6 +142,7 @@ const hltbGameTimes = {
     "Prey": 16,
     "Red Dead Redemption 2": 60,
     "Resident Evil 2": 8,
+    "Resident Evil 2 (1998)": null,
     "Resident Evil 3": 6,
     "Resident Evil 4 (2005)": 16,
     "Resident Evil 7 Biohazard": 9,

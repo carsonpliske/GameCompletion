@@ -648,7 +648,72 @@ const gamesList = [
     "Death Stranding Directors Cut",
     "Escape Simulator",
     "Five Nights at Freddy's: Sister Location",
-    "Five Nights at Freddy's 4"
+    "Five Nights at Freddy's 4",
+
+    // New games (pending photos, times, achievements)
+    "Gamble With Your Friends",
+    "Cloverpit",
+    "KEEP GAMBLING",
+    "Within of Static - Ashburg Rental",
+    "TCG Card Shop Simulator",
+    "Fears to Fathom - Scratch Creek",
+    "Within of Static - Northgate Mall",
+    "Tales Beyond The Tomb - No Witnesses",
+    "Tales Beyond The Tomb - Route 86",
+    "Tales Beyond The Tomb - White Silence",
+    "A Game About Digging A Hole",
+    "Riders Republic",
+    "THE GAME OF LIFE 2",
+    "The Texas Chain Saw Massacre",
+    "STAR WARS Battlefront (Classic, 2004)",
+    "Planet Zoo",
+    "Who's Your Daddy?!",
+    "Black Mesa",
+    "POSTAL 2",
+    "The Binding of Isaac",
+    "Dragon Age: Origins - Ultimate Edition",
+    "FINAL FANTASY VIII",
+    "STAR WARS Knights of the Old Republic",
+    "Fallout 3",
+    "Star Wars: Battlefront 2 (Classic, 2005)",
+    "Tales Beyond The Tomb - The Last Vigil",
+    "Backrooms: Escape Together",
+    "Tales Beyond The Tomb - The Farm's Secret",
+    "Tales Beyond The Tomb - Pineville Night Stalker",
+    "The Stanley Parable: Ultra Deluxe",
+    "Resident Evil (1996)",
+    "Resident Evil 3 Nemesis (1999)",
+    "Resident Evil 2 (1998)",
+    "EA SPORTS Madden NFL 26",
+    "Hellblade II: Senua's Saga",
+    "Sonic Colors: Ultimate",
+    "Mortal Kombat 1",
+    "Sonic Origins",
+    "Gotham Knights",
+    "Hello Neighbor 2",
+    "Overcooked! All You Can Eat",
+    "FINAL FANTASY VIII - REMASTERED",
+    "Dishonored: Death of the Outsider",
+    "State of Decay 2",
+    "FINAL FANTASY IV: THE AFTER YEARS",
+    "State of Decay: Year-One",
+    "Final Fantasy IV (3D Remake)",
+    "The Long Dark",
+    "Final Fantasy III (3D Remake)",
+    "L.A. Noire",
+    "Manhunt",
+    "Balatro",
+    "Tom Clancy's Splinter Cell: Pandora Tomorrow",
+    "Tom Clancy's The Division 2",
+    "F.E.A.R.: Perseus Mandate",
+    "F.E.A.R.: Extraction Point",
+    "F.E.A.R. 3",
+    "F.E.A.R.",
+    "F.E.A.R.2: Project Origin",
+    "Sons Of The Forest",
+    "Dead Island 2",
+    "Risk of Rain 2",
+    "Battlefield 6"
 ];
 
 function getTimeCategory(hours) {
@@ -1499,7 +1564,72 @@ const steamAppIds = {
     "Titanfall® 2": 1237970,
     "Tom Clancy's Ghost Recon® Wildlands": 460930,
     "UNCHARTED™: Legacy of Thieves Collection": 1659420,
-    "The Elder Scrolls® Online": 306130
+    "The Elder Scrolls® Online": 306130,
+
+    // New games (added games above, App IDs found via Steam store search)
+    "Gamble With Your Friends": 3892270,
+    "Cloverpit": 3314790,
+    "KEEP GAMBLING": 3720460,
+    "Within of Static - Ashburg Rental": 4092670,
+    "TCG Card Shop Simulator": 3070070,
+    "Fears to Fathom - Scratch Creek": 4121170,
+    "Within of Static - Northgate Mall": 4319350,
+    "Tales Beyond The Tomb - No Witnesses": 4483120,
+    "Tales Beyond The Tomb - Route 86": 3860920,
+    "Tales Beyond The Tomb - White Silence": 3655960,
+    "A Game About Digging A Hole": 3244220,
+    "Riders Republic": 2290180,
+    "THE GAME OF LIFE 2": 1455630,
+    "The Texas Chain Saw Massacre": 1433140,
+    "STAR WARS Battlefront (Classic, 2004)": 1058020,
+    "Planet Zoo": 703080,
+    "Who's Your Daddy?!": 427730,
+    "Black Mesa": 362890,
+    "POSTAL 2": 223470,
+    "The Binding of Isaac": 113200,
+    "Dragon Age: Origins - Ultimate Edition": 47810,
+    "FINAL FANTASY VIII": 39150,
+    "STAR WARS Knights of the Old Republic": 32370,
+    "Fallout 3": 22300,
+    "Star Wars: Battlefront 2 (Classic, 2005)": 6060,
+    "Tales Beyond The Tomb - The Last Vigil": 3416690,
+    "Backrooms: Escape Together": 2141730,
+    "Tales Beyond The Tomb - The Farm's Secret": 3374720,
+    "Tales Beyond The Tomb - Pineville Night Stalker": 3288180,
+    "The Stanley Parable: Ultra Deluxe": 1703340,
+    "Resident Evil (1996)": 4249100,
+    "Resident Evil 3 Nemesis (1999)": 4249120,
+    "Resident Evil 2 (1998)": 4249110,
+    "EA SPORTS Madden NFL 26": 3230400,
+    "Hellblade II: Senua's Saga": 2461850,
+    "Sonic Colors: Ultimate": 2055290,
+    "Mortal Kombat 1": 1971870,
+    "Sonic Origins": 1794960,
+    "Gotham Knights": 1496790,
+    "Hello Neighbor 2": 1321680,
+    "Overcooked! All You Can Eat": 1243830,
+    "FINAL FANTASY VIII - REMASTERED": 1026680,
+    "Dishonored: Death of the Outsider": 614570,
+    "State of Decay 2": 495420,
+    "FINAL FANTASY IV: THE AFTER YEARS": 346830,
+    "State of Decay: Year-One": 329430,
+    "Final Fantasy IV (3D Remake)": 312750,
+    "The Long Dark": 305620,
+    "Final Fantasy III (3D Remake)": 239120,
+    "L.A. Noire": 110800,
+    "Manhunt": 12130,
+    "Balatro": 2379780,
+    "Tom Clancy's Splinter Cell: Pandora Tomorrow": 3929740,
+    "Tom Clancy's The Division 2": 2221490,
+    "F.E.A.R.: Perseus Mandate": 21120,
+    "F.E.A.R.: Extraction Point": 21110,
+    "F.E.A.R. 3": 21100,
+    "F.E.A.R.": 21090,
+    "F.E.A.R.2: Project Origin": 16450,
+    "Sons Of The Forest": 1326470,
+    "Dead Island 2": 934700,
+    "Risk of Rain 2": 632360,
+    "Battlefield 6": 2807960
 };
 
 function getSteamAppId(gameName) {
@@ -1508,12 +1638,39 @@ function getSteamAppId(gameName) {
     return steamAppIds[cleanName] || steamAppIds[gameName] || null;
 }
 
+// Valve is migrating newer store listings off the old static
+// cdn.akamai.steamstatic.com/steam/apps/{id}/header.jpg path onto a CDN
+// scheme that requires a per-app hash segment
+// (shared.akamai.steamstatic.com/store_item_assets/steam/apps/{id}/{hash}/header.jpg).
+// The hash can't be derived from the App ID, so games on the new scheme
+// need their full header URL recorded here (fetched from Steam's
+// appdetails API) rather than just the App ID.
+const steamImageCdnOverrides = {
+    3892270: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3892270/395e6d7972474333a698b26f8aa5597bf38109a1/header.jpg",
+    3720460: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3720460/e626c2023fd9c52038acdf5191eb65119b1150b2/header.jpg",
+    4092670: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4092670/eaa964e4a1a52b7bd27b4463a1761433ebfa17e4/header.jpg",
+    4121170: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4121170/803663dce78da494e9d061cf6652ade566b96331/header.jpg",
+    4319350: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4319350/8dc264af01ae86bc5ff655dd4074c875d53edc6d/header.jpg",
+    4483120: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4483120/c22c503886afc8647d57657087b30ac83d612023/header.jpg",
+    3860920: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3860920/aa3b9ccb82e41e5f9203f708c44f7973209c703e/header.jpg",
+    3655960: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3655960/2b1e91a9a41cc545fb58dbb924b57ab309de5c30/header.jpg",
+    4249100: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249100/370da9c8c5e4573ea3c9d6ff22c88e89728fa0ed/header.jpg",
+    4249120: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249120/a882eb9852c45108a0e4d725cd15132387ab038e/header.jpg",
+    4249110: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249110/db95a4fbb11b56b6dc065dc0d6c662dab47498e5/header.jpg",
+    3230400: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3230400/979a5bffcde6f49d7e56ca9db6980256d3a96ad6/header.jpg",
+    3929740: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3929740/fd782a203ee11a3a61f1b2398fc439aa6d1f8640/header.jpg"
+};
+
 function getSteamImageUrl(appId, type = 'header') {
     if (!appId) return null;
 
     // If it's a local file (ends with .jpg, .png, etc.), return it as-is
     if (typeof appId === 'string' && appId.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
         return appId;
+    }
+
+    if (steamImageCdnOverrides[appId]) {
+        return steamImageCdnOverrides[appId];
     }
 
     // Steam CDN image URLs
@@ -2004,8 +2161,10 @@ const completionistTimes = {
     "Red Dead Redemption": 46,
     "Red Dead Redemption 2": 190,
     "Resident Evil": 23.5,
+    "Resident Evil (1996)": null,
     "Resident Evil 0": 16.5,
     "Resident Evil 2": 15.5,
+    "Resident Evil 2 (1998)": null,
     "Resident Evil 3": 20.5,
     "Resident Evil 4 (2005)": 31.5,
     "Resident Evil 5": 35.5,
@@ -2198,8 +2357,10 @@ const completionistTimes = {
 };
 
 function getCompletionistTime(gameName) {
-    // Try exact match first
-    if (completionistTimes[gameName]) {
+    // Try exact match first (existence check, not truthiness - a stored
+    // null/0 for a known game must not fall through to fuzzy variations
+    // and pick up an unrelated game's time)
+    if (Object.prototype.hasOwnProperty.call(completionistTimes, gameName)) {
         return completionistTimes[gameName];
     }
 
@@ -2231,8 +2392,10 @@ if (typeof gameDatabase !== 'undefined' && typeof hltbGameTimes !== 'undefined')
         // Try to find HLTB time for this game
         let hltbTime = null;
 
-        // Try exact match first
-        if (hltbGameTimes[gameName]) {
+        // Try exact match first (existence check, not truthiness - a stored
+        // null for a known game must not fall through to fuzzy variations
+        // and pick up an unrelated game's time)
+        if (Object.prototype.hasOwnProperty.call(hltbGameTimes, gameName)) {
             hltbTime = hltbGameTimes[gameName];
         } else {
             // Try some common name variations

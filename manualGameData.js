@@ -827,7 +827,27 @@ const allGames = [
     "SpongeBob SquarePants: The Cosmic Shake", "SOUTH PARK: SNOW DAY!", "The Elder Scrolls® Online",
     "Yooka-Laylee", "Yooka-Laylee and the Impossible Lair",
     "Flight Simulator X Steam Edition", "Death Stranding Directors Cut", "Escape Simulator",
-    "Five Nights at Freddy's: Sister Location", "Five Nights at Freddy's 4"
+    "Five Nights at Freddy's: Sister Location", "Five Nights at Freddy's 4",
+
+    // New games (pending photos, times, achievements)
+    "Gamble With Your Friends", "Cloverpit", "KEEP GAMBLING", "Within of Static - Ashburg Rental",
+    "TCG Card Shop Simulator", "Fears to Fathom - Scratch Creek", "Within of Static - Northgate Mall",
+    "Tales Beyond The Tomb - No Witnesses", "Tales Beyond The Tomb - Route 86", "Tales Beyond The Tomb - White Silence",
+    "A Game About Digging A Hole", "Riders Republic", "THE GAME OF LIFE 2", "The Texas Chain Saw Massacre",
+    "STAR WARS Battlefront (Classic, 2004)", "Planet Zoo", "Who's Your Daddy?!", "Black Mesa", "POSTAL 2",
+    "The Binding of Isaac", "Dragon Age: Origins - Ultimate Edition", "FINAL FANTASY VIII",
+    "STAR WARS Knights of the Old Republic", "Fallout 3", "Star Wars: Battlefront 2 (Classic, 2005)",
+    "Tales Beyond The Tomb - The Last Vigil", "Backrooms: Escape Together", "Tales Beyond The Tomb - The Farm's Secret",
+    "Tales Beyond The Tomb - Pineville Night Stalker", "The Stanley Parable: Ultra Deluxe",
+    "Resident Evil (1996)", "Resident Evil 3 Nemesis (1999)", "Resident Evil 2 (1998)",
+    "EA SPORTS Madden NFL 26", "Hellblade II: Senua's Saga", "Sonic Colors: Ultimate", "Mortal Kombat 1",
+    "Sonic Origins", "Gotham Knights", "Hello Neighbor 2", "Overcooked! All You Can Eat",
+    "FINAL FANTASY VIII - REMASTERED", "Dishonored: Death of the Outsider", "State of Decay 2",
+    "FINAL FANTASY IV: THE AFTER YEARS", "State of Decay: Year-One", "Final Fantasy IV (3D Remake)",
+    "The Long Dark", "Final Fantasy III (3D Remake)", "L.A. Noire", "Manhunt", "Balatro",
+    "Tom Clancy's Splinter Cell: Pandora Tomorrow", "Tom Clancy's The Division 2",
+    "F.E.A.R.: Perseus Mandate", "F.E.A.R.: Extraction Point", "F.E.A.R. 3", "F.E.A.R.",
+    "F.E.A.R.2: Project Origin", "Sons Of The Forest", "Dead Island 2", "Risk of Rain 2", "Battlefield 6"
 ];
 
 // Populate the database
