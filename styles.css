@@ -162,6 +162,43 @@ header p {
     transform: scale(0.95);
 }
 
+.steam-sync-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.steam-sync-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    background: #66c0f4;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.steam-sync-btn:hover:not(:disabled) {
+    background: #4a9fd8;
+}
+
+.steam-sync-btn:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+.steam-sync-btn:disabled {
+    background: #7f8c8d;
+    cursor: not-allowed;
+}
+
+.steam-sync-status {
+    color: white;
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
 .sort-arrow {
     color: #333;
     font-size: 14px;
@@ -534,6 +571,14 @@ header p {
     .sort-direction-btn {
         width: 44px;
         height: 44px;
+    }
+
+    .steam-sync-container {
+        justify-content: space-between;
+    }
+
+    .steam-sync-btn {
+        flex: 1;
     }
 
     .stats {

@@ -2922,6 +2922,101 @@ function updateAchievementProgress(gameTitle, value, total) {
     renderGames();
 }
 
+async function syncWithSteam() {
+    const syncBtn = document.getElementById('steamSyncBtn');
+    const syncStatus = document.getElementById('steamSyncStatus');
+    if (!syncBtn || syncBtn.disabled) return;
+
+    syncBtn.disabled = true;
+    syncBtn.textContent = 'Syncing...';
+    if (syncStatus) syncStatus.textContent = 'Fetching your Steam library...';
+
+    let ownedGames = {};
+    try {
+        const ownedRes = await fetch('/.netlify/functions/steam-owned-games');
+        const ownedData = await ownedRes.json();
+        if (ownedRes.ok && ownedData.available) {
+            ownedGames = ownedData.games || {};
+        } else {
+            console.log('Steam owned-games unavailable:', ownedData.error || ownedData.reason);
+        }
+    } catch (e) {
+        console.log('Failed to fetch owned games:', e.message);
+    }
+
+    // Every achievement-tracked game that isn't already completed - nothing
+    // for sync to change on games already marked done
+    const candidates = Object.keys(gameDatabase).filter(title => {
+        const ach = getAchievementData(title);
+        return ach.hasAchievements && !getGameCompletionStatus(title);
+    });
+
+    let checked = 0;
+    let newlyCompleted = 0;
+    let newlyInProgress = 0;
+    let failed = 0;
+
+    for (const title of candidates) {
+        checked++;
+        if (syncStatus) syncStatus.textContent = `Syncing ${checked}/${candidates.length}...`;
+
+        const appId = getSteamAppId(title);
+        if (!appId) {
+            failed++;
+        } else {
+            try {
+                const res = await fetch(`/.netlify/functions/steam-achievements?appid=${appId}`);
+                const data = await res.json();
+
+                if (!res.ok || !data.available) {
+                    failed++;
+                } else {
+                    const unlocked = data.unlocked;
+                    const total = getAchievementData(title).count;
+
+                    if (total > 0 && unlocked >= total) {
+                        // toggleGameCompletion (not updateAchievementProgress) -
+                        // this game may never have been manually flagged
+                        // in-progress, and updateAchievementProgress requires
+                        // an existing entry to do anything
+                        toggleGameCompletion(title, true);
+                        const hours = ownedGames[appId];
+                        if (hours !== undefined) {
+                            updateCustomTime(title, hours);
+                        }
+                        newlyCompleted++;
+                    } else if (unlocked > 0) {
+                        const gameProgress = JSON.parse(localStorage.getItem('gameProgress') || '{}');
+                        gameProgress[title] = { inProgress: true, currentAchievements: unlocked };
+                        localStorage.setItem('gameProgress', JSON.stringify(gameProgress));
+                        updateFloatingImageHighlight(title);
+                        newlyInProgress++;
+                    }
+                    // unlocked === 0: not started, leave untouched
+                }
+            } catch (e) {
+                failed++;
+            }
+        }
+
+        await new Promise(r => setTimeout(r, 400));
+    }
+
+    filterGames(); // re-renders and re-applies whatever filter is active
+
+    syncBtn.disabled = false;
+    syncBtn.textContent = 'Sync with Steam';
+    if (syncStatus) syncStatus.textContent = '';
+
+    const summaryParts = [`Synced ${checked} games`, `${newlyCompleted} newly completed`, `${newlyInProgress} now in progress`];
+    if (failed) summaryParts.push(`${failed} failed`);
+    const summaryToast = document.createElement('div');
+    summaryToast.className = 'toast-notification';
+    summaryToast.innerHTML = `⚡ ${summaryParts.join(' — ')}`;
+    document.body.appendChild(summaryToast);
+    setTimeout(() => summaryToast.remove(), 6000);
+}
+
 function toggleGameCompletion(gameTitle, isCompleted) {
     const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
 

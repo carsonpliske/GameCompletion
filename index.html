@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=20">
+    <link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body>
     <canvas id="confetti-canvas"></canvas>
@@ -35,6 +35,10 @@
                     <span class="sort-arrow">▲</span>
                 </button>
             </div>
+            <div class="steam-sync-container">
+                <button id="steamSyncBtn" class="steam-sync-btn" title="Pull achievement progress from Steam" onclick="syncWithSteam()">Sync with Steam</button>
+                <span id="steamSyncStatus" class="steam-sync-status"></span>
+            </div>
         </div>
 
         <div class="stats">
@@ -64,6 +68,6 @@
     <script src="manualGameData.js?v=9"></script>
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=12"></script>
-    <script src="script.js?v=38"></script>
+    <script src="script.js?v=39"></script>
 </body>
 </html>
