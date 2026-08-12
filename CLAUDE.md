@@ -12,6 +12,52 @@ This will serve the static HTML files at:
 
 The main application entry point is `index.html`.
 
+## Deployment
+
+Live at `gamecompletion.netlify.app`, auto-deployed from this repo's
+`master` branch on every push (Netlify's GitHub integration - no CI config
+needed beyond `netlify.toml`). Served as-is, no build step.
+
+## Steam Achievement Auto-Sync
+
+The site has one backend component: two Netlify Functions in
+`netlify/functions/` (`steam-achievements.js`, `steam-owned-games.js`) that
+call the Steam Web API server-side, since Steam's API has no CORS support
+and the API key can't live in client code. Credentials (`STEAM_API_KEY`,
+`STEAM_ID64`) are set in the Netlify dashboard (Site configuration ->
+Environment variables) - never in this repo, never in chat. (The "Contains
+secret values" checkbox gates Netlify's paid Secrets Controller scoping
+feature - leave it unchecked for a single-user project like this; the key
+is equally safe either way since it's only ever read server-side.)
+
+The "Sync with Steam" button (`syncWithSteam()` in `script.js`) walks every
+game where `getAchievementData(title).hasAchievements` is true and isn't
+already completed:
+- 0 unlocked achievements on Steam -> left alone (not started).
+- Partial -> `gameProgress` entry created/updated with the real unlocked
+  count, flagging it in-progress.
+- 100% -> auto-completes via `toggleGameCompletion` directly (not
+  `updateAchievementProgress`, which requires a pre-existing in-progress
+  entry and would silently no-op for a game that was never manually
+  flagged) and fills "My Completion Time" from real Steam playtime via
+  `updateCustomTime`.
+
+Paced ~400ms between calls, so a full sync of ~550 candidate games takes
+10-15 minutes. It's resumable/idempotent by design - each game's result
+saves to localStorage as it's checked, so closing the tab mid-sync loses
+nothing already processed.
+
+**Candidate count gotcha**: the button shows "Syncing X/Y..." where Y is
+*not* simply the count of `hasAchievements: true` entries in
+`achievementData.js` (there are more raw entries than that - some don't
+match any current game title via `getAchievementData`'s matching logic) and
+*not* the full library either (already-completed games are excluded). To
+explain a specific Y value, replicate `getAchievementData`'s exact matching
+logic (including the trademark-symbol-stripping variation) against
+`gamesList` rather than estimating from a raw count - the two numbers
+differ in practice (582 raw `hasAchievements: true` entries vs. 546 titles
+that actually resolve to one, as of August 2026).
+
 ## Adding New Games
 When adding new games, make sure to update:
 1. `gamesList` array in `script.js`
