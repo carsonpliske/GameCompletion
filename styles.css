@@ -42,9 +42,11 @@ body {
 .floating-image {
     width: 100%;
     height: auto;
+    aspect-ratio: 460 / 215;
     opacity: 0.15;
     pointer-events: none;
     border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .floating-image.completed-highlight {

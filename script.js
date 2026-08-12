@@ -1,6 +1,17 @@
 // Kill switch for floating background images
 const ENABLE_FLOATING_BACKGROUNDS = true;
 
+// Kill switch for persistent image caching (service worker)
+const ENABLE_IMAGE_CACHE_SW = true;
+
+if (ENABLE_IMAGE_CACHE_SW && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch((err) => {
+            console.log('Image cache service worker registration failed:', err);
+        });
+    });
+}
+
 const gamesList = [
     "Rust",
     "LOCKDOWN Protocol",
@@ -2325,8 +2336,8 @@ function renderGames() {
         const iconFallback = getGameIcon(game.title);
 
         const imageHtml = steamUrl
-            ? `<img src="${steamUrl}" alt="${game.title}" onerror="this.onerror=null; this.src='${fallbackUrl}'; this.onerror=function(){this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>';}">`
-            : `<img src="${fallbackUrl}" alt="${game.title}" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>'">`;
+            ? `<img src="${steamUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${fallbackUrl}'; this.onerror=function(){this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>';}">`
+            : `<img src="${fallbackUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>'">`;
 
         // Get achievement data
         const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
@@ -2951,6 +2962,9 @@ function createFloatingBackgrounds() {
     const wrapper = document.createElement('div');
     wrapper.className = 'floating-background-wrapper';
 
+    // Images to load, staggered in batches below instead of all at once
+    const pendingImages = [];
+
     // Create two grids with DIFFERENT shuffles to avoid duplicates at seam
     for (let gridNum = 0; gridNum < 2; gridNum++) {
         const grid = document.createElement('div');
@@ -2962,8 +2976,9 @@ function createFloatingBackgrounds() {
         shuffledGames.forEach((game) => {
             const img = document.createElement('img');
             img.className = 'floating-image';
-            img.src = getSteamImageUrl(game.id, 'header');
             img.dataset.gameName = game.name;
+            img.dataset.src = getSteamImageUrl(game.id, 'header');
+            img.fetchPriority = 'low'; // decorative background, defer to main content images
 
             // Check if this game is completed and add highlight
             if (getGameCompletionStatus(game.name)) {
@@ -2977,12 +2992,30 @@ function createFloatingBackgrounds() {
             };
 
             grid.appendChild(img);
+            pendingImages.push(img);
         });
 
         wrapper.appendChild(grid);
     }
 
     container.appendChild(wrapper);
+
+    // Load images in small batches instead of firing ~1600 requests at once
+    const BATCH_SIZE = 40;
+    const BATCH_DELAY_MS = 50;
+
+    function loadBatch(startIndex) {
+        const endIndex = Math.min(startIndex + BATCH_SIZE, pendingImages.length);
+        for (let i = startIndex; i < endIndex; i++) {
+            const img = pendingImages[i];
+            img.src = img.dataset.src;
+        }
+        if (endIndex < pendingImages.length) {
+            setTimeout(() => loadBatch(endIndex), BATCH_DELAY_MS);
+        }
+    }
+
+    loadBatch(0);
 }
 
 // Initialize floating backgrounds when page loads
