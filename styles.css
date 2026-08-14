@@ -1121,6 +1121,7 @@ body.shake {
     flex-shrink: 0;
 }
 
+.todo-guide-btn,
 .todo-sync-btn,
 .todo-remove-btn {
     background: none;
@@ -1131,6 +1132,16 @@ body.shake {
     padding: 3px 5px;
     border-radius: 4px;
     line-height: 1;
+}
+
+.todo-guide-btn {
+    text-decoration: none;
+    display: inline-flex;
+}
+
+.todo-guide-btn:hover {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
 }
 
 .todo-sync-btn:hover:not(:disabled) {

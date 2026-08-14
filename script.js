@@ -3073,6 +3073,7 @@ function renderTodoSidebar() {
         const steamUrl = getSteamImageUrl(game.steamAppId, 'header');
         const isExpanded = expandedTodoTitle === title;
         const remaining = achData.hasAchievements ? Math.max(achData.count - progress.currentAchievements, 0) : null;
+        const guideUrl = typeof getAchievementGuideUrl !== 'undefined' ? getAchievementGuideUrl(title) : null;
 
         return `
             <div class="todo-item ${isExpanded ? 'expanded' : ''}">
@@ -3089,6 +3090,9 @@ function renderTodoSidebar() {
                         </div>
                     </div>
                     <div class="todo-item-actions">
+                        ${guideUrl ? `
+                            <a class="todo-guide-btn" title="Open 100% achievement guide" href="${guideUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">📖</a>
+                        ` : ''}
                         ${achData.hasAchievements ? `
                             <button type="button" class="todo-sync-btn" title="Sync just this game's achievements from Steam" onclick="event.stopPropagation(); syncSingleTodoGame(this, '${escTitle}')">🔄</button>
                         ` : ''}
