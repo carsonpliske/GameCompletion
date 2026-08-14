@@ -1,3 +1,32 @@
+// --- Simple password gate ---
+// Not real security (the hash is sitting right here in a public JS file) -
+// just a casual deterrent so someone who stumbles on the site's link needs
+// a password rather than getting straight in. SHA-256 of the real password
+// so it's not literally readable via view-source.
+const SITE_PASSWORD_HASH = 'e32ac33fa53a3db6ed281b9223ca365d3311390344f591a48a8af30798b129ee';
+
+async function sha256Hex(text) {
+    const bytes = new TextEncoder().encode(text);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function handleLoginGateSubmit(event) {
+    event.preventDefault();
+    const input = document.getElementById('loginGatePassword');
+    const errorEl = document.getElementById('loginGateError');
+    const hash = await sha256Hex(input.value);
+
+    if (hash === SITE_PASSWORD_HASH) {
+        localStorage.setItem('siteUnlocked', 'true');
+        document.getElementById('loginGate').style.display = 'none';
+    } else {
+        errorEl.hidden = false;
+        input.value = '';
+        input.focus();
+    }
+}
+
 // Kill switch for floating background images
 const ENABLE_FLOATING_BACKGROUNDS = true;
 

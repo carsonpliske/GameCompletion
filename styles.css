@@ -13,6 +13,70 @@ body {
     overflow-x: hidden;
 }
 
+.login-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a252f;
+}
+
+.login-gate-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 280px;
+    padding: 32px 28px;
+    background: #2c3e50;
+    border: 1px solid #34495e;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.login-gate-card h1 {
+    font-size: 1.2rem;
+    color: white;
+}
+
+.login-gate-card input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #34495e;
+    background: #1a252f;
+    color: white;
+    font-size: 0.95rem;
+}
+
+.login-gate-card input:focus {
+    outline: none;
+    border-color: #ffd700;
+}
+
+.login-gate-card button {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #ffd700;
+    color: #1a252f;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.login-gate-card button:hover {
+    background: #ffe655;
+}
+
+.login-gate-error {
+    color: #e74c3c;
+    font-size: 0.82rem;
+}
+
 .floating-background {
     position: fixed;
     top: 0;

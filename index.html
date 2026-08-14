@@ -4,9 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=30">
+    <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body>
+    <div id="loginGate" class="login-gate">
+        <form id="loginGateForm" class="login-gate-card" onsubmit="handleLoginGateSubmit(event); return false;">
+            <h1>🔒 Password Required</h1>
+            <input type="password" id="loginGatePassword" placeholder="Password" autocomplete="current-password" autofocus>
+            <button type="submit">Unlock</button>
+            <div id="loginGateError" class="login-gate-error" hidden>Incorrect password.</div>
+        </form>
+    </div>
+    <script>
+        // Runs synchronously before the rest of the page paints, so an
+        // already-unlocked browser never sees the gate flash on screen.
+        if (localStorage.getItem('siteUnlocked') === 'true') {
+            document.getElementById('loginGate').style.display = 'none';
+        }
+    </script>
+
     <canvas id="confetti-canvas"></canvas>
     <div id="floatingBackground" class="floating-background"></div>
 
@@ -81,6 +97,6 @@
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=12"></script>
     <script src="achievementGuides.js?v=1"></script>
-    <script src="script.js?v=46"></script>
+    <script src="script.js?v=47"></script>
 </body>
 </html>
