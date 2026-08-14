@@ -302,7 +302,7 @@ const achievementGuides = {
     "GRIS": "https://steamcommunity.com/sharedfiles/filedetails/?id=1590842073",
     "Grounded": "https://steamcommunity.com/sharedfiles/filedetails/?id=3460004904",
     "Grow Home": "https://steamcommunity.com/sharedfiles/filedetails/?id=1193545865",
-    "Grow Up": null, // no comprehensive guide exists, only single-achievement-specific ones
+    "Grow Up": "https://steamcommunity.com/sharedfiles/filedetails/?id=3009285742", // user-provided link
     "GTFO": "https://steamcommunity.com/sharedfiles/filedetails/?id=3713133597", // via WebSearch fallback; guides page blocked by content-warning gate
     "Hades": "https://steamcommunity.com/sharedfiles/filedetails/?id=2231460116", // explicitly covers all 49
     "Half-Life 2": "https://steamcommunity.com/sharedfiles/filedetails/?id=2914589573",
