@@ -2980,6 +2980,62 @@ function toggleGameTodo(gameTitle) {
     renderTodoSidebar();
 }
 
+// Drag-to-reorder for the Active Games list. Dragging is only armed via
+// mousedown on the ⠿ handle (todoDragHandleActive) so grabbing the rest of
+// the row still triggers the normal expand/collapse click instead.
+let todoDragHandleActive = false;
+let draggedTodoElement = null;
+
+function handleTodoDragStart(e) {
+    if (!todoDragHandleActive) {
+        e.preventDefault();
+        return;
+    }
+    draggedTodoElement = e.currentTarget;
+    e.currentTarget.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', e.currentTarget.dataset.todoTitle);
+}
+
+function handleTodoDragEnd(e) {
+    todoDragHandleActive = false;
+    e.currentTarget.classList.remove('dragging');
+    draggedTodoElement = null;
+
+    const listEl = document.getElementById('todoList');
+    const newOrder = [...listEl.querySelectorAll('.todo-item')].map(el => el.dataset.todoTitle);
+    persistTodoOrder(newOrder);
+}
+
+function handleTodoListDragOver(e) {
+    if (!draggedTodoElement) return;
+    e.preventDefault();
+
+    const listEl = document.getElementById('todoList');
+    const items = [...listEl.querySelectorAll('.todo-item:not(.dragging)')];
+    const afterElement = items.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = e.clientY - box.top - box.height / 2;
+        return (offset < 0 && offset > closest.offset) ? { offset, element: child } : closest;
+    }, { offset: -Infinity, element: null }).element;
+
+    if (afterElement == null) {
+        listEl.appendChild(draggedTodoElement);
+    } else if (afterElement !== draggedTodoElement) {
+        listEl.insertBefore(draggedTodoElement, afterElement);
+    }
+}
+
+// Rewrites the stored order to match the visible drag result. Games hidden
+// from the list (already completed, per renderTodoSidebar's filter) aren't
+// part of newVisibleOrder - keep them in storage, just appended after.
+function persistTodoOrder(newVisibleOrder) {
+    const all = getTodoGames();
+    const visibleSet = new Set(newVisibleOrder);
+    const hidden = all.filter(t => !visibleSet.has(t));
+    localStorage.setItem('todoGames', JSON.stringify([...newVisibleOrder, ...hidden]));
+}
+
 function toggleTodoSidebar() {
     const sidebar = document.getElementById('todoSidebar');
     if (sidebar) sidebar.classList.toggle('open');
@@ -3076,8 +3132,9 @@ function renderTodoSidebar() {
         const guideUrl = typeof getAchievementGuideUrl !== 'undefined' ? getAchievementGuideUrl(title) : null;
 
         return `
-            <div class="todo-item ${isExpanded ? 'expanded' : ''}">
+            <div class="todo-item ${isExpanded ? 'expanded' : ''}" draggable="true" data-todo-title="${escapeHtml(title)}" ondragstart="handleTodoDragStart(event)" ondragend="handleTodoDragEnd(event)">
                 <div class="todo-item-header" onclick="toggleTodoExpand('${escTitle}')">
+                    <span class="todo-drag-handle" title="Drag to reorder" onmousedown="todoDragHandleActive = true" onclick="event.stopPropagation()">⠿</span>
                     <div class="todo-item-thumb">
                         ${steamUrl ? `<img src="${steamUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
                     </div>

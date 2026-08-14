@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=28">
+    <link rel="stylesheet" href="styles.css?v=29">
 </head>
 <body>
     <canvas id="confetti-canvas"></canvas>
@@ -16,7 +16,7 @@
             <h2>🎯 Active Games <span id="todoCount" class="todo-count">0</span></h2>
             <button class="todo-sidebar-close" title="Hide this panel" onclick="toggleTodoSidebar()">✕</button>
         </div>
-        <div id="todoList" class="todo-list">
+        <div id="todoList" class="todo-list" ondragover="handleTodoListDragOver(event)" ondrop="event.preventDefault()">
             <!-- Populated by renderTodoSidebar() -->
         </div>
     </aside>
@@ -81,6 +81,6 @@
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=12"></script>
     <script src="achievementGuides.js?v=1"></script>
-    <script src="script.js?v=44"></script>
+    <script src="script.js?v=45"></script>
 </body>
 </html>

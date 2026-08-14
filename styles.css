@@ -1062,6 +1062,10 @@ body.shake {
     border-color: #ffd700;
 }
 
+.todo-item.dragging {
+    opacity: 0.4;
+}
+
 .todo-item-header {
     display: flex;
     align-items: center;
@@ -1072,6 +1076,23 @@ body.shake {
 
 .todo-item-header:hover {
     background: rgba(255,255,255,0.04);
+}
+
+.todo-drag-handle {
+    flex-shrink: 0;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    line-height: 1;
+    cursor: grab;
+    padding: 2px;
+}
+
+.todo-drag-handle:hover {
+    color: #bdc3c7;
+}
+
+.todo-item.dragging .todo-drag-handle {
+    cursor: grabbing;
 }
 
 .todo-item-thumb {
