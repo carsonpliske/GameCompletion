@@ -3134,28 +3134,28 @@ function renderTodoSidebar() {
         return `
             <div class="todo-item ${isExpanded ? 'expanded' : ''}" draggable="true" data-todo-title="${escapeHtml(title)}" ondragstart="handleTodoDragStart(event)" ondragend="handleTodoDragEnd(event)">
                 <div class="todo-item-header" onclick="toggleTodoExpand('${escTitle}')">
-                    <span class="todo-drag-handle" title="Drag to reorder" onmousedown="todoDragHandleActive = true" onclick="event.stopPropagation()">⠿</span>
-                    <div class="todo-item-thumb">
-                        ${steamUrl ? `<img src="${steamUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
-                    </div>
-                    <div class="todo-item-info">
-                        <div class="todo-item-title">${escapeHtml(title)}</div>
+                    <div class="todo-item-title">${escapeHtml(title)}</div>
+                    <div class="todo-item-row">
+                        <span class="todo-drag-handle" title="Drag to reorder" onmousedown="todoDragHandleActive = true" onclick="event.stopPropagation()">⠿</span>
+                        <div class="todo-item-thumb">
+                            ${steamUrl ? `<img src="${steamUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+                        </div>
                         <div class="todo-item-progress">
                             ${achData.hasAchievements
                                 ? `🏆 ${progress.currentAchievements}/${achData.count}${remaining !== null ? (remaining > 0 ? ` &middot; ${remaining} left` : ' &middot; complete!') : ''}`
                                 : 'No achievements tracked'}
                         </div>
+                        <div class="todo-item-actions">
+                            ${guideUrl ? `
+                                <a class="todo-guide-btn" title="Open 100% achievement guide" href="${guideUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">📖</a>
+                            ` : ''}
+                            ${achData.hasAchievements ? `
+                                <button type="button" class="todo-sync-btn" title="Sync just this game's achievements from Steam" onclick="event.stopPropagation(); syncSingleTodoGame(this, '${escTitle}')">🔄</button>
+                            ` : ''}
+                            <button type="button" class="todo-remove-btn" title="Remove from Active Games" onclick="event.stopPropagation(); toggleGameTodo('${escTitle}')">✕</button>
+                        </div>
+                        <span class="todo-expand-arrow">${isExpanded ? '▲' : '▼'}</span>
                     </div>
-                    <div class="todo-item-actions">
-                        ${guideUrl ? `
-                            <a class="todo-guide-btn" title="Open 100% achievement guide" href="${guideUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">📖</a>
-                        ` : ''}
-                        ${achData.hasAchievements ? `
-                            <button type="button" class="todo-sync-btn" title="Sync just this game's achievements from Steam" onclick="event.stopPropagation(); syncSingleTodoGame(this, '${escTitle}')">🔄</button>
-                        ` : ''}
-                        <button type="button" class="todo-remove-btn" title="Remove from Active Games" onclick="event.stopPropagation(); toggleGameTodo('${escTitle}')">✕</button>
-                    </div>
-                    <span class="todo-expand-arrow">${isExpanded ? '▲' : '▼'}</span>
                 </div>
                 ${isExpanded ? `<div class="todo-item-details">${achData.hasAchievements ? renderTodoAchievementDetails(title) : '<div class="todo-detail-status">This game has no tracked Steam achievements.</div>'}</div>` : ''}
             </div>

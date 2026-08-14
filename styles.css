@@ -1068,10 +1068,16 @@ body.shake {
 
 .todo-item-header {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
     padding: 8px;
     cursor: pointer;
+}
+
+.todo-item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .todo-item-header:hover {
@@ -1115,24 +1121,19 @@ body.shake {
     display: block;
 }
 
-.todo-item-info {
-    flex: 1;
-    min-width: 0;
-}
-
 .todo-item-title {
     font-size: 0.82rem;
     font-weight: 600;
     color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
 }
 
 .todo-item-progress {
+    flex: 1;
+    min-width: 0;
     font-size: 0.72rem;
     color: #bdc3c7;
-    margin-top: 2px;
 }
 
 .todo-item-actions {
