@@ -1361,11 +1361,17 @@ body.shake {
 }
 
 .recent-sidebar {
-    position: fixed;
+    /* Absolute (not fixed) on the default/wide layout so the panel grows to
+       fit every card with no internal scrollbar - it scrolls along with the
+       rest of the page instead. body has position:relative, so this is
+       anchored to the top of the document, same spot fixed used to pin to
+       on load. Narrow-viewport drawer mode below overrides back to fixed,
+       since that mode needs to overlay the page at a constant screen
+       position regardless of scroll. */
+    position: absolute;
     top: 90px;
     right: 20px;
     width: 380px;
-    max-height: calc(100vh - 110px);
     display: flex;
     flex-direction: column;
     background: rgba(30, 41, 54, 0.97);
@@ -1418,8 +1424,7 @@ body.shake {
 }
 
 .recent-list {
-    overflow-y: auto;
-    padding: 8px;
+    padding: 12px;
 }
 
 .recent-empty {
@@ -1431,36 +1436,42 @@ body.shake {
 }
 
 .recent-month-header {
-    font-size: 0.78rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: #ffd700;
-    padding: 10px 6px 6px;
+    padding: 18px 4px 10px;
 }
 
 .recent-month-header:first-child {
-    padding-top: 4px;
+    padding-top: 6px;
 }
 
+/* Sized and styled like .game-card on the main grid - same background,
+   border, radius, and shadow - so this reads as "the same card, just in a
+   list" rather than a separate, smaller UI. */
 .recent-item {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: stretch;
     background: #2c3e50;
     border: 1px solid #34495e;
     border-radius: 8px;
-    margin-bottom: 8px;
-    padding: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    min-height: 100px;
 }
 
 .recent-item-thumb {
-    width: 64px;
-    height: 36px;
-    min-width: 64px;
-    border-radius: 4px;
+    width: 140px;
+    min-width: 140px;
+    border-right: 1px solid #495057;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
-    background: #2c3e50;
 }
 
 .recent-item-thumb img {
@@ -1474,27 +1485,33 @@ body.shake {
 .recent-item-info {
     flex: 1;
     min-width: 0;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .recent-item-title {
-    font-size: 0.82rem;
+    font-size: 1rem;
     font-weight: 600;
     color: white;
+    line-height: 1.3;
     white-space: normal;
     word-break: break-word;
 }
 
 .recent-item-meta {
-    font-size: 0.72rem;
+    font-size: 0.85rem;
     color: #bdc3c7;
-    margin-top: 3px;
+    margin-top: 8px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 4px;
 }
 
 .recent-item-time {
     color: #f1c40f;
+    font-weight: 600;
 }
 
 /* Wide screens: enough free space beside the centered container to pin the
@@ -1518,6 +1535,13 @@ body.shake {
     }
 
     .recent-sidebar {
+        /* Drawer mode has to overlay the viewport at a fixed screen
+           position regardless of where the page is scrolled to, so it
+           goes back to fixed + its own internal scroll here (unlike the
+           wide/default layout above, which lets the page itself scroll). */
+        position: fixed;
+        max-height: calc(100vh - 110px);
+        overflow: hidden;
         transform: translateX(120%);
         opacity: 0;
         pointer-events: none;
@@ -1527,6 +1551,10 @@ body.shake {
         transform: translateX(0);
         opacity: 1;
         pointer-events: auto;
+    }
+
+    .recent-list {
+        overflow-y: auto;
     }
 }
 
