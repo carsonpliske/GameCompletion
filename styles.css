@@ -1454,19 +1454,23 @@ body.shake {
     padding-top: 6px;
 }
 
-/* Sized and styled like .game-card on the main grid - same background,
-   border, radius, and shadow - so this reads as "the same card, just in a
-   list" rather than a separate, smaller UI. */
+/* Same background/border/radius/shadow as .game-card on the main grid, but
+   stacked vertically (banner image on top, full card width, text below)
+   instead of the main grid's side-by-side layout. A side-by-side thumb
+   would have to stretch to match this card's variable text height, which
+   never matches a Steam header image's fixed ~2.14:1 aspect ratio - it
+   either crops the image or leaves a gap. Stacking on top lets the image
+   run the card's full width at its own aspect ratio, so the whole image is
+   visible with no crop and no gap either way. */
 .recent-item {
     display: flex;
-    align-items: stretch;
+    flex-direction: column;
     background: #2c3e50;
     border: 1px solid #34495e;
     border-radius: 8px;
     margin-bottom: 16px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    min-height: 100px;
     transition: transform 0.35s ease, opacity 0.35s ease;
 }
 
@@ -1487,9 +1491,12 @@ body.shake {
 }
 
 .recent-item-thumb {
-    width: 140px;
-    min-width: 140px;
-    border-right: 1px solid #495057;
+    width: 100%;
+    /* Steam's header.jpg is standardized to 460x215 (~2.14:1) - sizing the
+       box to that exact ratio means "contain" below has nothing to
+       letterbox in the normal case, since the box and image ratios match. */
+    aspect-ratio: 460 / 215;
+    border-bottom: 1px solid #495057;
     background: transparent;
     display: flex;
     align-items: center;
@@ -1500,19 +1507,14 @@ body.shake {
 .recent-item-thumb img {
     width: 100%;
     height: 100%;
-    /* Unlike the main grid's .game-image (fixed 80px height, so "contain"
-       only letterboxes a thin strip), this thumb stretches to match
-       whatever height the card's text content needs - "contain" left a
-       tall gap of bare card background below the image. "cover" crops the
-       image instead of leaving that gap, trading some left/right edge for
-       a thumbnail that actually fills the box. */
-    object-fit: cover;
+    /* "contain" (not "cover") so the full image - including any title text
+       near its edges - is always visible, never cropped. */
+    object-fit: contain;
     object-position: center;
     display: block;
 }
 
 .recent-item-info {
-    flex: 1;
     min-width: 0;
     padding: 14px 16px;
     display: flex;
