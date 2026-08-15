@@ -3486,6 +3486,77 @@ async function syncWithSteam() {
     showInfoToast(`⚡ ${summaryParts.join(' — ')}`);
 }
 
+// --- Backup / restore ---
+// Everything this app tracks lives only in this browser's localStorage -
+// there's no server-side account, so clearing site data or switching
+// browsers loses it permanently. These two functions round-trip the three
+// keys that matter (siteUnlocked is just the password gate flag, not user
+// data, so it's deliberately excluded) through a downloadable JSON file.
+function exportGameData() {
+    const payload = {
+        exportedAt: new Date().toISOString(),
+        version: 1,
+        completedGames: JSON.parse(localStorage.getItem('completedGames') || '{}'),
+        gameProgress: JSON.parse(localStorage.getItem('gameProgress') || '{}'),
+        todoGames: JSON.parse(localStorage.getItem('todoGames') || '[]')
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `game-organizer-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+
+    showInfoToast('⬇️ Backup downloaded.');
+}
+
+function importGameData(event) {
+    const file = event.target.files[0];
+    event.target.value = ''; // reset so picking the same file again still fires 'change'
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        let data;
+        try {
+            data = JSON.parse(reader.result);
+        } catch (e) {
+            alert("That file isn't valid JSON.");
+            return;
+        }
+
+        const looksValid = data && typeof data === 'object'
+            && typeof data.completedGames === 'object' && data.completedGames !== null
+            && typeof data.gameProgress === 'object' && data.gameProgress !== null
+            && Array.isArray(data.todoGames);
+        if (!looksValid) {
+            alert("That file doesn't look like a Game Organizer backup.");
+            return;
+        }
+
+        const confirmed = confirm(
+            'Importing will REPLACE your current completed games, in-progress tracking, ' +
+            'and Active Games list with the contents of this file. This cannot be undone. Continue?'
+        );
+        if (!confirmed) return;
+
+        localStorage.setItem('completedGames', JSON.stringify(data.completedGames));
+        localStorage.setItem('gameProgress', JSON.stringify(data.gameProgress));
+        localStorage.setItem('todoGames', JSON.stringify(data.todoGames));
+
+        filterGames(); // re-renders the main list and stats for the restored data
+        renderTodoSidebar();
+        renderRecentSidebar();
+        showInfoToast('✅ Backup imported.');
+    };
+    reader.onerror = () => alert("Couldn't read that file.");
+    reader.readAsText(file);
+}
+
 function toggleGameCompletion(gameTitle, isCompleted) {
     const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
 

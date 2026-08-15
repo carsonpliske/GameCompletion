@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=39">
+    <link rel="stylesheet" href="styles.css?v=40">
 </head>
 <body>
     <div id="loginGate" class="login-gate">
@@ -78,6 +78,11 @@
                 <button id="steamSyncBtn" class="steam-sync-btn" title="Pull achievement progress from Steam" onclick="syncWithSteam()">Sync with Steam</button>
                 <span id="steamSyncStatus" class="steam-sync-status"></span>
             </div>
+            <div class="backup-container">
+                <button type="button" class="backup-btn" title="Download a backup of your completed games, in-progress tracking, and Active Games list" onclick="exportGameData()">⬇️ Export</button>
+                <button type="button" class="backup-btn" title="Restore from a previously exported backup file" onclick="document.getElementById('importFileInput').click()">⬆️ Import</button>
+                <input type="file" id="importFileInput" accept="application/json,.json" hidden onchange="importGameData(event)">
+            </div>
         </div>
 
         <div class="stats">
@@ -108,6 +113,6 @@
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=12"></script>
     <script src="achievementGuides.js?v=1"></script>
-    <script src="script.js?v=52"></script>
+    <script src="script.js?v=53"></script>
 </body>
 </html>

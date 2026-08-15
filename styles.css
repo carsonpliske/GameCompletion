@@ -263,6 +263,32 @@ header p {
     opacity: 0.85;
 }
 
+.backup-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.backup-btn {
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    background: rgba(255,255,255,0.12);
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.backup-btn:hover {
+    background: rgba(255,255,255,0.22);
+}
+
+.backup-btn:active {
+    transform: scale(0.97);
+}
+
 .sort-arrow {
     color: #333;
     font-size: 14px;
