@@ -3197,9 +3197,12 @@ function toggleRecentSidebar() {
     if (sidebar) sidebar.classList.toggle('open');
 }
 
-// Renders the "Recently Completed" sidebar: every completed game with a
-// known completionDate, newest first, grouped under a header for the month
-// it was finished in (e.g. "August 2026").
+const RECENT_SIDEBAR_LIMIT = 15;
+
+// Renders the "Recently Completed" sidebar: the most recent completed games
+// (capped at RECENT_SIDEBAR_LIMIT) with a known completionDate, newest
+// first, grouped under a header for the month each was finished in (e.g.
+// "August 2026").
 function renderRecentSidebar() {
     const listEl = document.getElementById('recentList');
     const countEl = document.getElementById('recentCount');
@@ -3212,7 +3215,8 @@ function renderRecentSidebar() {
     const entries = Object.keys(completedGames)
         .map(title => ({ title, data: getGameCompletionData(title) }))
         .filter(e => e.data.completed && e.data.completionDate)
-        .sort((a, b) => new Date(b.data.completionDate) - new Date(a.data.completionDate));
+        .sort((a, b) => new Date(b.data.completionDate) - new Date(a.data.completionDate))
+        .slice(0, RECENT_SIDEBAR_LIMIT);
 
     if (countEl) countEl.textContent = entries.length;
 
