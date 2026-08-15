@@ -263,26 +263,39 @@ header p {
     opacity: 0.85;
 }
 
+/* Tucked in the bottom-left corner, out of the way of everything else -
+   small icon-only buttons rather than the labeled controls-row buttons
+   this started as. */
 .backup-container {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    z-index: 20;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
 }
 
 .backup-btn {
-    padding: 12px 16px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #34495e;
+    border-radius: 6px;
+    font-size: 12px;
     color: white;
-    background: rgba(255,255,255,0.12);
+    background: rgba(44, 62, 80, 0.85);
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    opacity: 0.6;
+    transition: background-color 0.2s, transform 0.1s, opacity 0.2s;
 }
 
 .backup-btn:hover {
     background: rgba(255,255,255,0.22);
+    opacity: 1;
 }
 
 .backup-btn:active {

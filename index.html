@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=40">
+    <link rel="stylesheet" href="styles.css?v=41">
 </head>
 <body>
     <div id="loginGate" class="login-gate">
@@ -25,6 +25,12 @@
 
     <canvas id="confetti-canvas"></canvas>
     <div id="floatingBackground" class="floating-background"></div>
+
+    <div class="backup-container">
+        <button type="button" class="backup-btn" title="Download a backup of your completed games, in-progress tracking, and Active Games list" onclick="exportGameData()">⬇️</button>
+        <button type="button" class="backup-btn" title="Restore from a previously exported backup file" onclick="document.getElementById('importFileInput').click()">⬆️</button>
+        <input type="file" id="importFileInput" accept="application/json,.json" hidden onchange="importGameData(event)">
+    </div>
 
     <button id="todoSidebarToggle" class="todo-sidebar-toggle" title="Toggle Active Games list" onclick="toggleTodoSidebar()">🎯</button>
     <aside id="todoSidebar" class="todo-sidebar">
@@ -77,11 +83,6 @@
             <div class="steam-sync-container">
                 <button id="steamSyncBtn" class="steam-sync-btn" title="Pull achievement progress from Steam" onclick="syncWithSteam()">Sync with Steam</button>
                 <span id="steamSyncStatus" class="steam-sync-status"></span>
-            </div>
-            <div class="backup-container">
-                <button type="button" class="backup-btn" title="Download a backup of your completed games, in-progress tracking, and Active Games list" onclick="exportGameData()">⬇️ Export</button>
-                <button type="button" class="backup-btn" title="Restore from a previously exported backup file" onclick="document.getElementById('importFileInput').click()">⬆️ Import</button>
-                <input type="file" id="importFileInput" accept="application/json,.json" hidden onchange="importGameData(event)">
             </div>
         </div>
 
