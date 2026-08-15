@@ -1500,8 +1500,14 @@ body.shake {
 .recent-item-thumb img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    object-position: center top;
+    /* Unlike the main grid's .game-image (fixed 80px height, so "contain"
+       only letterboxes a thin strip), this thumb stretches to match
+       whatever height the card's text content needs - "contain" left a
+       tall gap of bare card background below the image. "cover" crops the
+       image instead of leaving that gap, trading some left/right edge for
+       a thumbnail that actually fills the box. */
+    object-fit: cover;
+    object-position: center;
     display: block;
 }
 
