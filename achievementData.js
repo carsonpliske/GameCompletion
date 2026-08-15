@@ -407,6 +407,7 @@ const steamAchievements = {
     "LIGHTNING RETURNS: FINAL FANTASY XIII": { hasAchievements: true, count: 42 },
     "LIMBO": { hasAchievements: true, count: 13 },
     "Little Nightmares": { hasAchievements: true, count: 22 },
+    "Little Nightmares Enhanced Edition": { hasAchievements: true, count: 22 },
     "Little Nightmares II": { hasAchievements: true, count: 35 },
     "LOCKDOWN Protocol": { hasAchievements: false, count: 0 },
     "Longvinter": { hasAchievements: true, count: 50 },

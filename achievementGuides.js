@@ -147,6 +147,7 @@ const achievementGuides = {
     "Hand Simulator: Survival": "https://steamcommunity.com/sharedfiles/filedetails/?id=2816716693",
     "The Walking Dead: The Final Season": "https://steamcommunity.com/sharedfiles/filedetails/?id=2085756129",
     "Little Nightmares": "https://steamcommunity.com/sharedfiles/filedetails/?id=2903326636",
+    "Little Nightmares Enhanced Edition": "https://steamcommunity.com/sharedfiles/filedetails/?id=2903326636",
     "Dead Rising": "https://steamcommunity.com/sharedfiles/filedetails/?id=2976043301",
     "Call of Duty: Black Ops - Multiplayer": "https://steamcommunity.com/sharedfiles/filedetails/?id=3454676947",
     "Tomb Raider": "https://steamcommunity.com/sharedfiles/filedetails/?id=2395381409", // German-language; the English candidate found appears removed/erroring

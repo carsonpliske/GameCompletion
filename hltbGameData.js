@@ -123,6 +123,7 @@ const hltbGameTimes = {
     "Life is Strange: Before the Storm": 8,
     "LIMBO": 4,
     "Little Nightmares": 4,
+    "Little Nightmares Enhanced Edition": 4,
     "Little Nightmares II": 5,
     "Mad Max": 19.5,
     "Marvel's Spider-Man Remastered": 17,
