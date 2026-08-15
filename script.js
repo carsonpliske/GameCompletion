@@ -3257,9 +3257,14 @@ function renderRecentSidebar() {
 
         const game = gameDatabase[title];
         const steamUrl = game ? getSteamImageUrl(game.steamAppId, 'header') : null;
+        // Same lookup the main grid's game-image-link uses - game.steamAppId
+        // is just getSteamAppId(title) cached onto the game object.
+        const storeUrl = game && game.steamAppId ? `https://store.steampowered.com/app/${game.steamAppId}` : null;
+        const tag = storeUrl ? 'a' : 'div';
+        const linkAttrs = storeUrl ? ` href="${storeUrl}" target="_blank" rel="noopener" title="View on Steam Store"` : '';
 
         html += `
-            <div class="recent-item" data-title="${escapeHtml(title)}">
+            <${tag} class="recent-item" data-title="${escapeHtml(title)}"${linkAttrs}>
                 <div class="recent-item-thumb">
                     ${steamUrl ? `<img src="${steamUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
                 </div>
@@ -3270,7 +3275,7 @@ function renderRecentSidebar() {
                         <span class="recent-item-time">${data.customTime ? `Took ${formatTime(data.customTime)}` : 'Time not logged'}</span>
                     </div>
                 </div>
-            </div>
+            </${tag}>
         `;
     }
 

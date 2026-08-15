@@ -1471,7 +1471,18 @@ body.shake {
     margin-bottom: 16px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    transition: transform 0.35s ease, opacity 0.35s ease;
+    transition: transform 0.35s ease, opacity 0.35s ease, box-shadow 0.2s;
+    /* Cards render as <a href="...steam store...">  when a Steam App ID is
+       known (see renderRecentSidebar in script.js) - undo link defaults so
+       it still looks and behaves like a plain card, not blue/underlined
+       text. */
+    color: inherit;
+    text-decoration: none;
+}
+
+.recent-item[href]:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
 }
 
 /* New completion popping in at the top of the list - class is added on
