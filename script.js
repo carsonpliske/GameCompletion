@@ -3220,10 +3220,29 @@ function renderRecentSidebar() {
 
     if (countEl) countEl.textContent = entries.length;
 
+    // FLIP setup ("First, Last, Invert, Play"): record where every
+    // currently-rendered card sits on screen, keyed by title, before the
+    // DOM is touched below - used afterward to animate persisting cards
+    // from their old position to their new one instead of just jumping.
+    const oldRects = new Map();
+    const existingItems = new Map();
+    listEl.querySelectorAll('.recent-item[data-title]').forEach(el => {
+        oldRects.set(el.dataset.title, el.getBoundingClientRect());
+        existingItems.set(el.dataset.title, el);
+    });
+
     if (entries.length === 0) {
         listEl.innerHTML = '<div class="recent-empty">No completed games with a logged date yet.</div>';
         return;
     }
+
+    // Cards present before this render but not in the new capped list -
+    // dropped off the bottom by RECENT_SIDEBAR_LIMIT, or un-completed -
+    // animate them out instead of deleting them immediately.
+    const newTitleSet = new Set(entries.map(e => e.title));
+    const leavingEls = [...existingItems.entries()]
+        .filter(([title]) => !newTitleSet.has(title))
+        .map(([, el]) => el);
 
     let html = '';
     let lastMonthKey = null;
@@ -3240,7 +3259,7 @@ function renderRecentSidebar() {
         const steamUrl = game ? getSteamImageUrl(game.steamAppId, 'header') : null;
 
         html += `
-            <div class="recent-item">
+            <div class="recent-item" data-title="${escapeHtml(title)}">
                 <div class="recent-item-thumb">
                     ${steamUrl ? `<img src="${steamUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
                 </div>
@@ -3256,6 +3275,55 @@ function renderRecentSidebar() {
     }
 
     listEl.innerHTML = html;
+
+    // Captured before leavingEls are appended below, so it only covers the
+    // fresh render - leaving cards get their own plain fade-out, not a FLIP
+    // move, since jumping them from wherever they used to be to "the bottom"
+    // would look like a slide, not a disappearance.
+    const currentEls = listEl.querySelectorAll('.recent-item[data-title]');
+
+    // Cards leaving the list visually belong at the bottom (that's where the
+    // cap trims from), so drop them back in after the fresh render and let
+    // them fade out in place rather than just disappearing.
+    leavingEls.forEach(el => {
+        listEl.appendChild(el);
+        el.addEventListener('transitionend', () => el.remove(), { once: true });
+    });
+
+    // Invert: jump persisting cards back to their pre-render screen position
+    // with no transition, and mark brand-new cards with their "before"
+    // entrance state - both are instant, so nothing visible happens yet.
+    currentEls.forEach(el => {
+        const old = oldRects.get(el.dataset.title);
+        if (!old) {
+            el.classList.add('recent-item-entering');
+            return;
+        }
+        const newRect = el.getBoundingClientRect();
+        const dx = old.left - newRect.left;
+        const dy = old.top - newRect.top;
+        if (dx || dy) {
+            el.style.transition = 'none';
+            el.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+    });
+
+    // Force a layout flush so the browser commits the states set above
+    // before we release them below - otherwise it would coalesce both style
+    // writes into one and skip straight to the end state with no animation.
+    void listEl.offsetHeight;
+
+    // Play: release everything to its natural state on the next frame. The
+    // CSS transition on .recent-item (move) and .recent-item-entering
+    // (pop-in) then animates from the "before" state set above to this one.
+    requestAnimationFrame(() => {
+        currentEls.forEach(el => {
+            el.style.transition = '';
+            el.style.transform = '';
+            el.classList.remove('recent-item-entering');
+        });
+        leavingEls.forEach(el => el.classList.add('recent-item-leaving'));
+    });
 }
 
 // Syncs one game's achievement progress from Steam and updates local state
