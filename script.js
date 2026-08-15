@@ -3275,7 +3275,7 @@ function renderRecentSidebar() {
                     <div class="recent-item-title">${escapeHtml(title)}</div>
                     <div class="recent-item-meta">
                         <span>Completed ${formatCompletionDate(data.completionDate)}</span>
-                        <span class="recent-item-time">${data.customTime ? `Took ${formatTime(data.customTime)}` : 'Time not logged'}</span>
+                        <span class="recent-item-time">${data.customTime ? `${formatTime(data.customTime)} to complete` : 'Time not logged'}</span>
                     </div>
                 </div>
             </${tag}>
