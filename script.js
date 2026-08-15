@@ -3478,7 +3478,7 @@ async function syncWithSteam() {
     renderRecentSidebar();
 
     syncBtn.disabled = false;
-    syncBtn.textContent = 'Sync with Steam';
+    syncBtn.textContent = 'Sync';
     if (syncStatus) syncStatus.textContent = '';
 
     const summaryParts = [`Synced ${checked} games`, `${newlyCompleted} newly completed`, `${newlyInProgress} now in progress`];

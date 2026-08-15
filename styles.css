@@ -239,13 +239,15 @@ header p {
     font-size: 15px;
     font-weight: 600;
     color: white;
-    background: #66c0f4;
+    /* Steam's own dark navy/black brand color, not the lighter accent blue
+       used elsewhere on the page - matches the actual Steam UI chrome. */
+    background: #171a21;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
 }
 
 .steam-sync-btn:hover:not(:disabled) {
-    background: #4a9fd8;
+    background: #2a475e;
 }
 
 .steam-sync-btn:active:not(:disabled) {
