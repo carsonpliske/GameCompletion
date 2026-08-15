@@ -3192,6 +3192,68 @@ function renderTodoSidebar() {
     }).join('');
 }
 
+function toggleRecentSidebar() {
+    const sidebar = document.getElementById('recentSidebar');
+    if (sidebar) sidebar.classList.toggle('open');
+}
+
+// Renders the "Recently Completed" sidebar: every completed game with a
+// known completionDate, newest first, grouped under a header for the month
+// it was finished in (e.g. "August 2026").
+function renderRecentSidebar() {
+    const listEl = document.getElementById('recentList');
+    const countEl = document.getElementById('recentCount');
+    if (!listEl) return;
+
+    const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const entries = Object.keys(completedGames)
+        .map(title => ({ title, data: getGameCompletionData(title) }))
+        .filter(e => e.data.completed && e.data.completionDate)
+        .sort((a, b) => new Date(b.data.completionDate) - new Date(a.data.completionDate));
+
+    if (countEl) countEl.textContent = entries.length;
+
+    if (entries.length === 0) {
+        listEl.innerHTML = '<div class="recent-empty">No completed games with a logged date yet.</div>';
+        return;
+    }
+
+    let html = '';
+    let lastMonthKey = null;
+
+    for (const { title, data } of entries) {
+        const date = new Date(data.completionDate);
+        const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+        if (monthKey !== lastMonthKey) {
+            lastMonthKey = monthKey;
+            html += `<div class="recent-month-header">${monthNames[date.getMonth()]} ${date.getFullYear()}</div>`;
+        }
+
+        const game = gameDatabase[title];
+        const steamUrl = game ? getSteamImageUrl(game.steamAppId, 'header') : null;
+
+        html += `
+            <div class="recent-item">
+                <div class="recent-item-thumb">
+                    ${steamUrl ? `<img src="${steamUrl}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+                </div>
+                <div class="recent-item-info">
+                    <div class="recent-item-title">${escapeHtml(title)}</div>
+                    <div class="recent-item-meta">
+                        <span>Completed ${formatCompletionDate(data.completionDate)}</span>
+                        <span class="recent-item-time">${data.customTime ? `Took ${formatTime(data.customTime)}` : 'Time not logged'}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    listEl.innerHTML = html;
+}
+
 // Syncs one game's achievement progress from Steam and updates local state
 // (completion / in-progress tracking + the sidebar's achievement detail
 // cache). Shared by the full "Sync with Steam" sweep and the sidebar's
@@ -3262,6 +3324,7 @@ async function syncSingleTodoGame(btn, gameTitle) {
         } else {
             filterGames(); // re-renders the main list
             renderTodoSidebar();
+            renderRecentSidebar();
             const msg = result.status === 'completed'
                 ? `🎉 ${escapeHtml(gameTitle)} complete!`
                 : `✅ ${escapeHtml(gameTitle)}: ${result.unlocked}/${result.total} achievements`;
@@ -3332,6 +3395,7 @@ async function syncWithSteam() {
 
     filterGames(); // re-renders and re-applies whatever filter is active
     renderTodoSidebar();
+    renderRecentSidebar();
 
     syncBtn.disabled = false;
     syncBtn.textContent = 'Sync with Steam';
@@ -3380,6 +3444,7 @@ function toggleGameCompletion(gameTitle, isCompleted) {
                     // happen before celebrateCompletion() below, since that
                     // function needs to find and animate the freshly-rendered card
     renderTodoSidebar();
+    renderRecentSidebar();
 
     if (isCompleted) {
         celebrateCompletion(gameTitle);
@@ -3424,6 +3489,7 @@ function updateCompletionDate(gameTitle, dateString) {
         entry.completionDate = parsedDate.toISOString();
         localStorage.setItem('completedGames', JSON.stringify(completedGames));
         renderGames();
+        renderRecentSidebar();
     } catch (e) {
         alert('Invalid date format. Please use format like "Jan 15, 2025"');
     }
@@ -3440,6 +3506,7 @@ function updateCustomTime(gameTitle, timeValue) {
 
     localStorage.setItem('completedGames', JSON.stringify(completedGames));
     renderGames(); // Re-render to show as static text
+    renderRecentSidebar();
 }
 
 function editCustomTime(event, gameTitle, currentTime) {
@@ -3659,6 +3726,7 @@ console.log('gameDatabase keys:', Object.keys(gameDatabase).length);
 updateStats();
 renderGames();
 renderTodoSidebar();
+renderRecentSidebar();
 
 console.log(`Loaded ${currentGames.length} games!`);
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=31">
+    <link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body>
     <div id="loginGate" class="login-gate">
@@ -34,6 +34,17 @@
         </div>
         <div id="todoList" class="todo-list" ondragover="handleTodoListDragOver(event)" ondrop="event.preventDefault()">
             <!-- Populated by renderTodoSidebar() -->
+        </div>
+    </aside>
+
+    <button id="recentSidebarToggle" class="recent-sidebar-toggle" title="Toggle Recently Completed list" onclick="toggleRecentSidebar()">🏁</button>
+    <aside id="recentSidebar" class="recent-sidebar">
+        <div class="recent-sidebar-header">
+            <h2>🏁 Recently Completed <span id="recentCount" class="recent-count">0</span></h2>
+            <button class="recent-sidebar-close" title="Hide this panel" onclick="toggleRecentSidebar()">✕</button>
+        </div>
+        <div id="recentList" class="recent-list">
+            <!-- Populated by renderRecentSidebar() -->
         </div>
     </aside>
 
@@ -97,6 +108,6 @@
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=12"></script>
     <script src="achievementGuides.js?v=1"></script>
-    <script src="script.js?v=47"></script>
+    <script src="script.js?v=48"></script>
 </body>
 </html>
