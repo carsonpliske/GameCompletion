@@ -3,7 +3,7 @@
 // just a casual deterrent so someone who stumbles on the site's link needs
 // a password rather than getting straight in. SHA-256 of the real password
 // so it's not literally readable via view-source.
-const SITE_PASSWORD_HASH = 'e32ac33fa53a3db6ed281b9223ca365d3311390344f591a48a8af30798b129ee';
+const SITE_PASSWORD_HASH = '04120a4a8c47bf9b5542528886ad4ae8e8eed42278fcf5150ebf9425dd87d2c7';
 
 async function sha256Hex(text) {
     const bytes = new TextEncoder().encode(text);
@@ -2090,7 +2090,7 @@ const completionistTimes = {
     "LEGO® The Incredibles": 20,
     "LEGO® The Lord of the Rings™": 33.5,
     "LEGO® Worlds": 35.5,
-    "Lethal Company": 1966720,
+    "Lethal Company": 36.5,
     "Life is Strange™": 18.5,
     "Life is Strange 2": 20,
     "Life is Strange: Before the Storm": 13,
@@ -2102,15 +2102,15 @@ const completionistTimes = {
     "Little Nightmares": 9,
     "Little Nightmares Enhanced Edition": 9,
     "Little Nightmares II": 9,
-    "LOCKDOWN Protocol": 2780980,
-    "Longvinter": 1635450,
+    "LOCKDOWN Protocol": null,
+    "Longvinter": null,
     "Mad Max": 61.5,
     "Mafia": 21,
     "Mafia: Definitive Edition": 24.5,
     "Mafia II (Classic)": 32,
     "Mafia II: Definitive Edition": 34.5,
     "Mafia III: Definitive Edition": 70,
-    "Mage Arena": "Unknown",
+    "Mage Arena": null,
     "Marvel Rivals": 56,
     "Marvel vs. Capcom: Infinite": 12,
     "Marvel's Avengers - The Definitive Edition": 105,
@@ -2127,14 +2127,14 @@ const completionistTimes = {
     "Metro Exodus Enhanced Edition": 45,
     "Metro: Last Light Complete Edition": 37,
     "Metro: Last Light Redux": 28,
-    "MiniRoyale": 1657090,
+    "MiniRoyale": null,
     "Mirror's Edge": 12.5,
     "Mirror's Edge™ Catalyst": 32,
     "Monopoly Plus": 5.5,
     "Moonlighter": 30,
     "Mortal Kombat 11": 62,
     "Mortal Kombat X": 66,
-    "MultiVersus": 1818750,
+    "MultiVersus": 90.5,
     "My Friend Pedro": 9,
     "NBA 2K24": 500,
     "Need for Speed™": 31,
@@ -2168,7 +2168,7 @@ const completionistTimes = {
     "Plants vs. Zombies™ Garden Warfare 2: Deluxe Edition": 100,
     "Portal": 10.5,
     "Portal 2": 22.5,
-    "Portal 2 - The Final Hours": 104600,
+    "Portal 2 - The Final Hours": null,
     "Portal with RTX": 10.5,
     "PowerWash Simulator": 60,
     "Prince of Persia": 30,
@@ -2188,7 +2188,7 @@ const completionistTimes = {
     "Rayman Legends": 31.5,
     "Rayman Origins": 21.5,
     "Rayman: Raving Rabbids": 11,
-    "Rec Room": 471710,
+    "Rec Room": null,
     "Red Dead Redemption": 46,
     "Red Dead Redemption 2": 190,
     "Resident Evil": 23.5,
@@ -2287,9 +2287,9 @@ const completionistTimes = {
     "Tom Clancy's Ghost Recon: Desert Siege": 4.5,
     "Tom Clancy's Ghost Recon® Wildlands": 84.5,
     "Tom Clancy's Rainbow Six 3: Gold Edition": 47.5,
-    "Tom Clancy's Rainbow Six 3: Athena Sword": 19840,
-    "Tom Clancy's Rainbow Six: Lockdown": 15000,
-    "Tom Clancy's Rainbow Six® Siege X": 359550,
+    "Tom Clancy's Rainbow Six 3: Athena Sword": 4,
+    "Tom Clancy's Rainbow Six: Lockdown": 12,
+    "Tom Clancy's Rainbow Six® Siege X": 180,
     "Tom Clancy's Rainbow Six: Vegas": 33,
     "Tom Clancy's Rainbow Six: Vegas 2": 29,
     "Tom Clancy's Splinter Cell": 16,
@@ -2336,7 +2336,7 @@ const completionistTimes = {
     "A Way Out": 6.5,
     "Welcome to the Game": 14,
     "What Remains of Edith Finch": 3,
-    "Witch It": 559650,
+    "Witch It": null,
     "The Witcher: Enhanced Edition": 63.5,
     "The Witcher 2: Assassins of Kings Enhanced Edition": 56.5,
     "The Witcher 3: Wild Hunt": 175,
@@ -2345,7 +2345,7 @@ const completionistTimes = {
     "The Wolf Among Us": 9.5,
     "Wolfenstein 3D": 11,
     "Wolfenstein 3D: Spear of Destiny": 8.5,
-    "Wolfenstein: Enemy Territory": 9020,
+    "Wolfenstein: Enemy Territory": null,
     "Wolfenstein II: The New Colossus": 33.5,
     "Wolfenstein: The New Order": 24.5,
     "Wolfenstein: The Old Blood": 16,
@@ -2784,6 +2784,21 @@ function updateSortDirectionArrow() {
     sortDirectionBtn.title = sortDirection === 'asc' ? 'Ascending (click to toggle)' : 'Descending (click to toggle)';
 }
 
+// Sort value for the "100% Complete" sort. A game with no achievements can't
+// have a meaningful 100% time, so it sorts by main story time instead, and
+// lands at the top (value 0) when that's unknown too.
+function getCompletionistSortValue(game) {
+    const achData = typeof getAchievementData !== 'undefined'
+        ? getAchievementData(game.title)
+        : { hasAchievements: false, count: 0 };
+
+    if (achData.hasAchievements && achData.count > 0) {
+        return parseFloat(game.completionistTime) || null;
+    }
+
+    return parseFloat(game.timeToBeat) || 0;
+}
+
 function sortGames() {
     const sortBy = sortSelect.value;
     const isAsc = sortDirection === 'asc';
@@ -2811,12 +2826,12 @@ function sortGames() {
                 break;
 
             case 'completionistTime':
-                const compTimeA = parseFloat(gameA.completionistTime) || 0;
-                const compTimeB = parseFloat(gameB.completionistTime) || 0;
+                const compTimeA = getCompletionistSortValue(gameA);
+                const compTimeB = getCompletionistSortValue(gameB);
 
-                if (!gameA.completionistTime && !gameB.completionistTime) { result = 0; break; }
-                if (!gameA.completionistTime) { result = 1; break; }
-                if (!gameB.completionistTime) { result = -1; break; }
+                if (compTimeA === null && compTimeB === null) { result = 0; break; }
+                if (compTimeA === null) { result = 1; break; }
+                if (compTimeB === null) { result = -1; break; }
 
                 result = compTimeA - compTimeB;
                 break;
