@@ -2784,16 +2784,23 @@ function updateSortDirectionArrow() {
     sortDirectionBtn.title = sortDirection === 'asc' ? 'Ascending (click to toggle)' : 'Descending (click to toggle)';
 }
 
-// Sort value for the "100% Complete" sort. A game with no achievements can't
-// have a meaningful 100% time, so it sorts by main story time instead, and
-// lands at the top (value 0) when that's unknown too.
+// Sort value for the "100% Complete" sort. A logged 100% time always wins,
+// achievements or not (e.g. Indiana Jones has no achievements but a real
+// 19.5h completionist time, so it sorts there rather than by main story).
+// Only a no-achievement game with no 100% time falls back to main story
+// time, and lands at the top (value 0) when even that's unknown.
 function getCompletionistSortValue(game) {
+    const compTime = parseFloat(game.completionistTime) || null;
+    if (compTime) {
+        return compTime;
+    }
+
     const achData = typeof getAchievementData !== 'undefined'
         ? getAchievementData(game.title)
         : { hasAchievements: false, count: 0 };
 
     if (achData.hasAchievements && achData.count > 0) {
-        return parseFloat(game.completionistTime) || null;
+        return null;
     }
 
     return parseFloat(game.timeToBeat) || 0;
