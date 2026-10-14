@@ -4066,6 +4066,7 @@ function openStats() {
         <div class="up-next-card stats-card" role="dialog" aria-label="Stats">
             <button type="button" class="up-next-close" title="Close" onclick="closeStats()">✕</button>
             <div class="up-next-heading">📊 Your Stats</div>
+            <button type="button" class="yir-open" onclick="openYearInReview()">🏆 Year in Review</button>
             <div class="stats-tiles">
                 <div class="stats-tile">
                     <div class="stats-value">${pct}%</div>
@@ -4136,6 +4137,131 @@ function openStats() {
 
     modal.classList.add('open');
 }
+
+// ---- Year in Review ----
+function getCompletionYears() {
+    const years = new Set();
+    Object.keys(gameDatabase).forEach(t => {
+        const date = getGameCompletionData(t).completionDate;
+        if (getGameCompletionStatus(t) && date) years.add(new Date(date).getFullYear());
+    });
+    return [...years].sort((a, b) => b - a);
+}
+
+function computeYearInReview(year) {
+    const games = Object.keys(gameDatabase)
+        .filter(t => {
+            const data = getGameCompletionData(t);
+            return data.completed && data.completionDate && new Date(data.completionDate).getFullYear() === year;
+        })
+        .map(t => {
+            const data = getGameCompletionData(t);
+            return { title: t, date: new Date(data.completionDate), hours: parseFloat(data.customTime) || null };
+        })
+        .sort((a, b) => a.date - b.date);
+
+    const timed = games.filter(g => g.hours);
+    const byHours = timed.slice().sort((a, b) => a.hours - b.hours);
+    const monthCounts = Array(12).fill(0);
+    games.forEach(g => monthCounts[g.date.getMonth()]++);
+    const busiest = monthCounts.indexOf(Math.max(...monthCounts));
+    const achievements = games.reduce((n, g) => {
+        const a = getAchievementData(g.title);
+        return n + (a.hasAchievements ? a.count : 0);
+    }, 0);
+
+    return {
+        year, games,
+        hours: timed.reduce((n, g) => n + g.hours, 0),
+        achievements,
+        fastest: byHours[0] || null,
+        longest: byHours.length > 1 ? byHours[byHours.length - 1] : null,
+        busiestMonth: games.length ? new Date(year, busiest, 1).toLocaleString('en-US', { month: 'long' }) : null,
+        busiestCount: monthCounts[busiest],
+    };
+}
+
+function openYearInReview(year) {
+    const years = getCompletionYears();
+    if (!years.length) {
+        showInfoToast('🏆 Complete a game (with a completion date) to unlock your Year in Review.');
+        return;
+    }
+    year = year || years[0];
+    const r = computeYearInReview(year);
+    closeStats();
+
+    let modal = document.getElementById('yirModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'yirModal';
+        modal.className = 'up-next-modal';
+        modal.addEventListener('click', e => { if (e.target === modal) closeYearInReview(); });
+        document.body.appendChild(modal);
+    }
+
+    const coverFor = title => {
+        const game = gameDatabase[title];
+        return `<img src="${getCoverImageUrl(game)}" alt="${escapeHtml(title)}" title="${escapeHtml(title)}" loading="lazy"
+                     onerror="this.onerror=null; this.src='${getSteamImageUrl(game.steamAppId, 'header') || ''}'">`;
+    };
+    const highlight = (label, g) => g ? `
+        <div class="yir-highlight">
+            ${coverFor(g.title)}
+            <div><div class="stats-label">${label}</div><div class="yir-hl-title">${escapeHtml(g.title)}</div>
+            <div class="stats-sub">${formatHoursShort(g.hours)}h</div></div>
+        </div>` : '';
+
+    modal.innerHTML = `
+        <div class="up-next-card yir-card" role="dialog" aria-label="Year in Review">
+            <button type="button" class="up-next-close" title="Close" onclick="closeYearInReview()">✕</button>
+            <div class="yir-years">${years.map(y =>
+                `<button type="button" class="filter-chip ${y === year ? 'active' : ''}" onclick="openYearInReview(${y})">${y}</button>`).join('')}</div>
+            <div class="yir-hero">
+                <div class="yir-kicker">Your ${year} in games</div>
+                <div class="yir-big">${r.games.length}</div>
+                <div class="yir-big-label">game${r.games.length === 1 ? '' : 's'} beaten</div>
+            </div>
+            <div class="stats-tiles yir-tiles">
+                <div class="stats-tile"><div class="stats-value">${formatHoursShort(r.hours)}h</div><div class="stats-label">Hours logged</div></div>
+                <div class="stats-tile"><div class="stats-value">${r.achievements.toLocaleString()}</div><div class="stats-label">Achievements earned</div></div>
+                <div class="stats-tile"><div class="stats-value">${r.busiestMonth ? r.busiestMonth.slice(0, 3) : '—'}</div><div class="stats-label">Busiest month</div><div class="stats-sub">${r.busiestCount} completed</div></div>
+            </div>
+            <div class="yir-highlights">
+                ${highlight('⚡ Fastest', r.fastest)}
+                ${highlight('🐢 Longest', r.longest)}
+            </div>
+            <div class="stats-chart-title">Everything you beat in ${year}</div>
+            <div class="yir-collage">${r.games.map(g => coverFor(g.title)).join('')}</div>
+            <button type="button" class="yir-copy" onclick="copyYearInReview(${year})">📋 Copy summary</button>
+        </div>`;
+    modal.classList.add('open');
+}
+
+function copyYearInReview(year) {
+    const r = computeYearInReview(year);
+    const lines = [
+        `🎮 My ${year} in games`,
+        `🏆 ${r.games.length} game${r.games.length === 1 ? '' : 's'} beaten · ⏱️ ${formatHoursShort(r.hours)}h logged · 🎖️ ${r.achievements.toLocaleString()} achievements`,
+        r.fastest ? `⚡ Fastest: ${r.fastest.title} (${formatHoursShort(r.fastest.hours)}h)` : null,
+        r.longest ? `🐢 Longest: ${r.longest.title} (${formatHoursShort(r.longest.hours)}h)` : null,
+        r.busiestMonth ? `📅 Busiest month: ${r.busiestMonth} (${r.busiestCount})` : null,
+        '',
+        ...r.games.map(g => `• ${g.title}`),
+    ].filter(l => l !== null);
+    navigator.clipboard.writeText(lines.join('\n'))
+        .then(() => showInfoToast('📋 Year in Review copied to clipboard'))
+        .catch(() => showInfoToast('⚠️ Couldn\'t access the clipboard'));
+}
+
+function closeYearInReview() {
+    const modal = document.getElementById('yirModal');
+    if (modal) modal.classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeYearInReview();
+});
 
 function closeStats() {
     const modal = document.getElementById('statsModal');
