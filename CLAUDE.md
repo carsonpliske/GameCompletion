@@ -58,6 +58,15 @@ logic (including the trademark-symbol-stripping variation) against
 differ in practice (582 raw `hasAchievements: true` entries vs. 546 titles
 that actually resolve to one, as of August 2026).
 
+## "New in your Steam library" list
+On load, the live site calls `steam-owned-games?names=1` and shows a
+"🆕 N new" button for owned App IDs missing from `steamAppIds` (minus any
+the user dismissed, stored in localStorage `dismissedNewGames`). Its
+"Copy list" button produces `- Name (App ID 12345)` lines - when the user
+pastes that, add each game following the steps below; the App ID is
+already known, so skip the storesearch lookup (still verify it via
+appdetails).
+
 ## Adding New Games
 When adding new games, make sure to update:
 1. `gamesList` array in `script.js`

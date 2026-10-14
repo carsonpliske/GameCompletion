@@ -2514,3 +2514,69 @@ body.shake {
     font-size: 0.9rem;
     cursor: help;
 }
+
+/* ---- New-in-library detection ---- */
+.new-games-btn {
+    background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+}
+
+.new-games-btn[hidden] {
+    display: none;
+}
+
+.new-games-card {
+    width: min(460px, 92vw);
+    text-align: left;
+}
+
+.new-games-card .up-next-heading {
+    text-align: center;
+}
+
+.new-games-help {
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.new-games-list {
+    max-height: 50vh;
+    overflow-y: auto;
+    margin: 0 0 14px;
+    padding: 0;
+    list-style: none;
+}
+
+.new-games-list li {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.new-games-list a {
+    flex: 1;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.new-games-list a:hover {
+    color: #66c0f4;
+}
+
+.new-games-dismiss {
+    border: none;
+    background: none;
+    color: #8f98a0;
+    cursor: pointer;
+}
+
+.new-games-dismiss:hover {
+    color: #ffffff;
+}
+
+.new-games-dismiss-all {
+    background: #4b5a66;
+}

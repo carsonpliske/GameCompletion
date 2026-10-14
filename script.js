@@ -4390,6 +4390,102 @@ document.addEventListener('keydown', e => {
 const kbObserver = new MutationObserver(() => { kbIndex = -1; });
 kbObserver.observe(gamesListContainer, { childList: true });
 
+// ---- "New in your Steam library" detection ----
+// Games are added to the site in code (so they get HLTB times, release
+// years, etc. - see CLAUDE.md), so this only *detects* owned games the
+// site doesn't know yet and lists them for copying into a request to add
+// them. Dismissed App IDs (tools, demos, games you don't care about) are
+// remembered so they stop showing up.
+let newLibraryGames = [];
+
+function getDismissedNewGames() {
+    return new Set(JSON.parse(localStorage.getItem('dismissedNewGames') || '[]'));
+}
+
+async function checkForNewLibraryGames() {
+    try {
+        const res = await fetch('/.netlify/functions/steam-owned-games?names=1');
+        const data = await res.json();
+        if (!res.ok || !data.available || !data.names) return;
+
+        const known = new Set(Object.values(steamAppIds).map(String));
+        const dismissed = getDismissedNewGames();
+        newLibraryGames = Object.entries(data.names)
+            .filter(([appId]) => !known.has(appId) && !dismissed.has(appId))
+            .map(([appId, name]) => ({ appId, name, hours: data.games[appId] || 0 }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+        updateNewGamesButton();
+    } catch (e) {
+        // Functions unreachable (e.g. local http-server) - nothing to check against
+    }
+}
+
+function updateNewGamesButton() {
+    const btn = document.getElementById('newGamesBtn');
+    if (!btn) return;
+    btn.hidden = newLibraryGames.length === 0;
+    btn.textContent = `🆕 ${newLibraryGames.length} new`;
+    btn.title = `${newLibraryGames.length} game${newLibraryGames.length === 1 ? '' : 's'} in your Steam library aren't on the site yet`;
+}
+
+function openNewGames() {
+    let modal = document.getElementById('newGamesModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'newGamesModal';
+        modal.className = 'up-next-modal';
+        modal.addEventListener('click', e => { if (e.target === modal) closeNewGames(); });
+        document.body.appendChild(modal);
+    }
+    if (newLibraryGames.length === 0) { closeNewGames(); return; }
+
+    modal.innerHTML = `
+        <div class="up-next-card new-games-card" role="dialog" aria-label="New in your Steam library">
+            <button type="button" class="up-next-close" title="Close" onclick="closeNewGames()">✕</button>
+            <div class="up-next-heading">🆕 New in your Steam library</div>
+            <div class="stats-sub new-games-help">These ${newLibraryGames.length} games aren't on the site yet. Copy the list and ask Claude to add them (with covers, times and achievements), or dismiss ones you don't want.</div>
+            <ul class="new-games-list">
+                ${newLibraryGames.map(g => `
+                    <li>
+                        <a href="https://store.steampowered.com/app/${g.appId}" target="_blank" rel="noopener">${escapeHtml(g.name)}</a>
+                        <span class="stats-sub">${g.hours ? `${formatHoursShort(g.hours)}h played` : 'not played'}</span>
+                        <button type="button" class="new-games-dismiss" title="Don't show this game again" onclick="dismissNewGames(['${g.appId}'])">✕</button>
+                    </li>`).join('')}
+            </ul>
+            <div class="up-next-actions">
+                <button type="button" class="up-next-spin" onclick="copyNewGamesList()">📋 Copy list</button>
+                <button type="button" class="new-games-dismiss-all" onclick="dismissNewGames(newLibraryGames.map(g => g.appId))">Dismiss all</button>
+            </div>
+        </div>`;
+    modal.classList.add('open');
+}
+
+function closeNewGames() {
+    const modal = document.getElementById('newGamesModal');
+    if (modal) modal.classList.remove('open');
+}
+
+function dismissNewGames(appIds) {
+    const dismissed = getDismissedNewGames();
+    appIds.forEach(id => dismissed.add(String(id)));
+    localStorage.setItem('dismissedNewGames', JSON.stringify([...dismissed]));
+    newLibraryGames = newLibraryGames.filter(g => !dismissed.has(g.appId));
+    updateNewGamesButton();
+    openNewGames(); // re-render the list, or close it if now empty
+}
+
+function copyNewGamesList() {
+    const text = 'Add these games from my Steam library to the site:\n'
+        + newLibraryGames.map(g => `- ${g.name} (App ID ${g.appId})`).join('\n');
+    navigator.clipboard.writeText(text)
+        .then(() => showInfoToast('📋 List copied - paste it to Claude to add them'))
+        .catch(() => showInfoToast('⚠️ Couldn\'t access the clipboard'));
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeNewGames();
+});
+
 // Quiet background re-check on page load of just the games actually being
 // played - Active Games plus anything in progress - so their achievement
 // counts are current without running the full ~550-game sweep. Throttled
@@ -4889,6 +4985,7 @@ renderRecentSidebar();
 // Skipped behind the password gate - no point syncing for a locked page.
 if (localStorage.getItem('siteUnlocked') === 'true') {
     setTimeout(autoSyncActiveGames, 1500);
+    setTimeout(checkForNewLibraryGames, 2500);
 }
 
 console.log(`Loaded ${currentGames.length} games!`);

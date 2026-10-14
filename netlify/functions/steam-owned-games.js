@@ -27,7 +27,10 @@ exports.handler = async (event) => {
         };
     }
 
-    const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${apiKey}&steamid=${steamId}&include_appinfo=false&include_played_free_games=true&format=json`;
+    // ?names=1 also returns each game's name (used by the "new in your
+    // library" check); off by default to keep the sync calls' payload small.
+    const wantNames = !!(event.queryStringParameters && event.queryStringParameters.names);
+    const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${apiKey}&steamid=${steamId}&include_appinfo=${wantNames}&include_played_free_games=true&format=json`;
 
     try {
         const res = await fetch(url);
@@ -45,15 +48,17 @@ exports.handler = async (event) => {
         }
 
         const byAppId = {};
+        const names = {};
         games.forEach((g) => {
             const minutes = g.playtime_forever || 0;
             byAppId[g.appid] = Math.round((minutes / 60) * 2) / 2; // nearest 0.5 hour
+            if (wantNames && g.name) names[g.appid] = g.name;
         });
 
         return {
             statusCode: 200,
             headers: CORS_HEADERS,
-            body: JSON.stringify({ available: true, games: byAppId }),
+            body: JSON.stringify(wantNames ? { available: true, games: byAppId, names } : { available: true, games: byAppId }),
         };
     } catch (err) {
         return {
