@@ -3776,6 +3776,125 @@ async function syncWithSteam() {
     showInfoToast(`⚡ ${summaryParts.join(' — ')}`);
 }
 
+// ---- "Up Next" picker ----
+// Spins through the shortest unfinished games (same ordering as the 100%
+// sort, so a logged "My Time" or main-story fallback counts the same way)
+// and lands on a random one of them. Completed and hidden games are skipped.
+const UP_NEXT_POOL_SIZE = 10;
+let upNextSpinning = false;
+
+function getUpNextPool() {
+    const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
+    const hidden = getHiddenGames();
+    return Object.keys(gameDatabase)
+        .filter(title => !getGameCompletionStatus(title) && !hidden.has(title))
+        .map(title => ({ title, hours: getCompletionistSortValue(gameDatabase[title], completedGames) }))
+        .filter(g => g.hours > 0) // skip games with no time data at all
+        .sort((a, b) => a.hours - b.hours)
+        .slice(0, UP_NEXT_POOL_SIZE);
+}
+
+function getCoverImageUrl(game) {
+    return steamLibraryCoverOverrides[game.title]
+        || getSteamImageUrl(game.steamAppId, 'library')
+        || getSteamImageUrl(game.steamAppId, 'header');
+}
+
+function openUpNext() {
+    let modal = document.getElementById('upNextModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'upNextModal';
+        modal.className = 'up-next-modal';
+        modal.innerHTML = `
+            <div class="up-next-card" role="dialog" aria-label="Up Next">
+                <button type="button" class="up-next-close" title="Close" onclick="closeUpNext()">✕</button>
+                <div class="up-next-heading">🎲 Up Next</div>
+                <div class="up-next-cover"><img alt=""></div>
+                <div class="up-next-title"></div>
+                <div class="up-next-time"></div>
+                <div class="up-next-actions">
+                    <button type="button" class="up-next-add" onclick="addUpNextToActive()">★ Add to Active Games</button>
+                    <button type="button" class="up-next-spin" onclick="spinUpNext()">🎲 Spin again</button>
+                </div>
+            </div>`;
+        modal.addEventListener('click', e => { if (e.target === modal) closeUpNext(); });
+        document.body.appendChild(modal);
+    }
+    modal.classList.add('open');
+    spinUpNext();
+}
+
+function closeUpNext() {
+    const modal = document.getElementById('upNextModal');
+    if (modal) modal.classList.remove('open');
+}
+
+function showUpNextFrame(entry, final) {
+    const modal = document.getElementById('upNextModal');
+    const game = gameDatabase[entry.title];
+    const img = modal.querySelector('.up-next-cover img');
+    img.onerror = () => { img.onerror = null; img.src = getSteamImageUrl(game.steamAppId, 'header') || ''; };
+    img.src = getCoverImageUrl(game);
+    modal.querySelector('.up-next-title').textContent = entry.title;
+    modal.querySelector('.up-next-time').textContent = final ? `About ${formatTime(entry.hours).replace(/^1 hours$/, '1 hour')} to finish` : '';
+    modal.querySelector('.up-next-cover').classList.toggle('landed', final);
+}
+
+function spinUpNext() {
+    if (upNextSpinning) return;
+    const modal = document.getElementById('upNextModal');
+    const pool = getUpNextPool();
+    if (pool.length === 0) {
+        modal.querySelector('.up-next-title').textContent = 'Nothing left to pick - you finished everything!';
+        return;
+    }
+
+    upNextSpinning = true;
+    modal.classList.add('spinning');
+    const winner = pool[Math.floor(Math.random() * pool.length)];
+    modal.dataset.pick = winner.title;
+
+    // Decelerating "slot machine" cycle that always ends on the winner
+    const steps = 16;
+    let delay = 55;
+    let i = 0;
+    const tick = () => {
+        const last = i === steps;
+        showUpNextFrame(last ? winner : pool[(i + Math.floor(Math.random() * pool.length)) % pool.length], last);
+        if (last) {
+            upNextSpinning = false;
+            modal.classList.remove('spinning');
+            updateUpNextAddButton();
+            return;
+        }
+        i++;
+        delay *= 1.17;
+        setTimeout(tick, delay);
+    };
+    tick();
+}
+
+function updateUpNextAddButton() {
+    const modal = document.getElementById('upNextModal');
+    const btn = modal.querySelector('.up-next-add');
+    const onList = isGameTodo(modal.dataset.pick);
+    btn.disabled = onList;
+    btn.textContent = onList ? '★ On your Active Games' : '★ Add to Active Games';
+}
+
+function addUpNextToActive() {
+    const modal = document.getElementById('upNextModal');
+    const title = modal.dataset.pick;
+    if (!title || upNextSpinning || isGameTodo(title)) return;
+    toggleGameTodo(title);
+    updateUpNextAddButton();
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeUpNext();
+});
+
 // Quiet background re-check on page load of just the games actually being
 // played - Active Games plus anything in progress - so their achievement
 // counts are current without running the full ~550-game sweep. Throttled

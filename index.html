@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=47">
+    <link rel="stylesheet" href="styles.css?v=48">
 </head>
 <body>
     <div id="loginGate" class="login-gate">
@@ -82,6 +82,7 @@
                 <button id="viewModeBtn" class="sort-direction-btn view-mode-btn" title="Switch to cover view" onclick="toggleViewMode()">🖼️</button>
             </div>
             <div class="steam-sync-container">
+                <button id="upNextBtn" class="up-next-btn" title="Pick your next game from the shortest ones you haven't finished" onclick="openUpNext()">🎲 Up Next</button>
                 <button id="steamSyncBtn" class="steam-sync-btn" title="Pull achievement progress from Steam" onclick="syncWithSteam()">Sync</button>
                 <span id="steamSyncStatus" class="steam-sync-status"></span>
             </div>
@@ -119,6 +120,6 @@
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=13"></script>
     <script src="achievementGuides.js?v=1"></script>
-    <script src="script.js?v=62"></script>
+    <script src="script.js?v=63"></script>
 </body>
 </html>
