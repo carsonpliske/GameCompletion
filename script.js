@@ -4111,6 +4111,74 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeStats();
 });
 
+// ---- Keyboard shortcuts ----
+// Ignored while typing in any field, or with Ctrl/Alt/Meta held (so browser
+// shortcuts keep working). Arrow keys move a highlight between games; the
+// column count is measured from the live layout so it works in both views.
+let kbIndex = -1;
+
+function getGameItems() {
+    return [...gamesListContainer.querySelectorAll(coverView ? ':scope > .game-tile' : ':scope > .game-card')];
+}
+
+function setKbFocus(index) {
+    const items = getGameItems();
+    if (items.length === 0) return;
+    items.forEach(el => el.classList.remove('kb-focus'));
+    kbIndex = Math.max(0, Math.min(items.length - 1, index));
+    items[kbIndex].classList.add('kb-focus');
+    items[kbIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function getGridColumns(items) {
+    if (items.length === 0) return 1;
+    const top = items[0].offsetTop;
+    const cols = items.findIndex(el => el.offsetTop !== top);
+    return cols === -1 ? items.length : cols;
+}
+
+function showShortcutHelp() {
+    showInfoToast(`⌨️ <b>Shortcuts</b> — <b>/</b> search · <b>C</b> covers/classic · <b>U</b> Up Next · <b>S</b> stats · <b>arrows</b> move · <b>Enter</b> open on Steam · <b>Esc</b> close`, 8000);
+}
+
+document.addEventListener('keydown', e => {
+    const target = e.target;
+    const typing = target.closest && target.closest('input, textarea, select, [contenteditable="true"]');
+    if (typing) {
+        if (e.key === 'Escape') target.blur();
+        return;
+    }
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    if (document.querySelector('.up-next-modal.open')) return; // popups own the keyboard (Esc handled there)
+
+    const items = getGameItems();
+    const cols = getGridColumns(items);
+    const moves = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols };
+
+    if (e.key in moves) {
+        e.preventDefault();
+        setKbFocus(kbIndex < 0 ? 0 : kbIndex + moves[e.key]);
+    } else if (e.key === 'Enter' && kbIndex >= 0 && items[kbIndex]) {
+        const link = items[kbIndex].querySelector('.game-image-link');
+        if (link && link.getAttribute('href') !== '#') window.open(link.href, '_blank', 'noopener');
+    } else if (e.key === '/') {
+        e.preventDefault();
+        searchInput.focus();
+    } else if (e.key === 'c' || e.key === 'C') {
+        toggleViewMode();
+    } else if (e.key === 'u' || e.key === 'U') {
+        openUpNext();
+    } else if (e.key === 's' || e.key === 'S') {
+        openStats();
+    } else if (e.key === '?') {
+        showShortcutHelp();
+    }
+});
+
+// Re-rendering replaces every card, so the highlight starts over
+const kbObserver = new MutationObserver(() => { kbIndex = -1; });
+kbObserver.observe(gamesListContainer, { childList: true });
+
 // Quiet background re-check on page load of just the games actually being
 // played - Active Games plus anything in progress - so their achievement
 // counts are current without running the full ~550-game sweep. Throttled

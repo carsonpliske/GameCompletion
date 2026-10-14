@@ -2296,3 +2296,10 @@ body.shake {
     border-color: #66c0f4;
     color: #ffffff;
 }
+
+/* Keyboard-navigation highlight (arrow keys) */
+.game-card.kb-focus,
+.game-tile.kb-focus .game-card {
+    outline: 3px solid #66c0f4;
+    outline-offset: 3px;
+}
