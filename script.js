@@ -743,7 +743,11 @@ const gamesList = [
     "Sons Of The Forest",
     "Dead Island 2",
     "Risk of Rain 2",
-    "Battlefield 6"
+    "Battlefield 6",
+    "Call of Duty®: Black Ops 6",
+    "Prey: Typhon Hunter",
+    "Vampire Survivors",
+    "WARDOGS"
 ];
 
 function getTimeCategory(hours) {
@@ -1658,7 +1662,11 @@ const steamAppIds = {
     "Sons Of The Forest": 1326470,
     "Dead Island 2": 934700,
     "Risk of Rain 2": 632360,
-    "Battlefield 6": 2807960
+    "Battlefield 6": 2807960,
+    "Call of Duty®: Black Ops 6": 4384550,
+    "Prey: Typhon Hunter": 741820,
+    "Vampire Survivors": 1794680,
+    "WARDOGS": 1867240
 };
 
 function getSteamAppId(gameName) {
@@ -1690,7 +1698,10 @@ const steamImageCdnOverrides = {
     3929740: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3929740/fd782a203ee11a3a61f1b2398fc439aa6d1f8640/header.jpg",
     2807960: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/c12d12ce3c7d217398d3fcad77427bfc9d57c570/header.jpg",
     3527290: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/31bac6b2eccf09b368f5e95ce510bae2baf3cfcd/header.jpg",
-    3716600: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3716600/e09e178465c67642c1214736e29d64846d966e52/header.jpg"
+    3716600: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3716600/e09e178465c67642c1214736e29d64846d966e52/header.jpg",
+    4384550: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4384550/836828b783fc1208664d6c3f9fe88e9abf060813/header.jpg",
+    1794680: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1794680/2ca07b690dde645771125ed9d9206c4c5fde4dd4/header.jpg",
+    1867240: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1867240/59d4daf753bd5d982e6675f7eee363bc817c574e/header.jpg"
 };
 
 // Same CDN migration, but for the portrait library art used by cover view.
@@ -1704,6 +1715,9 @@ const steamImageCdnOverrides = {
 // picked via its API; no key needed to load the images). Keyed by steamAppIds
 // value, or by game title where two entries share one App ID.
 const steamLibraryCoverOverrides = {
+    4384550: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4384550/e88de53b958760b68c081ec3e2ee1ddea2b5ceb7/library_capsule.jpg", // Call of Duty®: Black Ops 6
+    1794680: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1794680/96947acc36ca29e24084ffb5858062d478c2ce6b/library_capsule.jpg", // Vampire Survivors
+    1867240: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1867240/31dd6ce5538a3064749d769527656f9002a382b0/library_capsule.jpg", // WARDOGS
     205930: "https://cdn2.steamgriddb.com/grid/bdffd8ee443a9507462b7015aa990494.png", // Hitman: Sniper Challenge
     1962660: "https://cdn2.steamgriddb.com/grid/5cef43602bc7486da26ba5fbf4483f43.png", // Call of Duty®: Modern Warfare® II - Open Beta
     407530: "https://cdn2.steamgriddb.com/grid/df3f5bc6f8359d51858bb8ffeb11fe98.png", // ARK: Survival Of The Fittest
@@ -2544,7 +2558,10 @@ const completionistTimes = {
     "Sons Of The Forest": 53.5,
     "Dead Island 2": 39.5,
     "Risk of Rain 2": 145.5,
-    "Battlefield 6": 24.5
+    "Battlefield 6": 24.5,
+    "Call of Duty®: Black Ops 6": 39.5,
+    "Prey: Typhon Hunter": 8.5,
+    "Vampire Survivors": 58.5
 };
 
 function getCompletionistTime(gameName) {
@@ -4398,6 +4415,22 @@ kbObserver.observe(gamesListContainer, { childList: true });
 // remembered so they stop showing up.
 let newLibraryGames = [];
 
+// Owned App IDs that should never show as "new" (reviewed 2026-10-14):
+// - library IDs of games already on the site under a different App ID
+//   (store vs. owned editions, yearly-reused CoD hubs, etc.)
+// - test servers / betas / non-game tools the user doesn't track
+// - games deliberately removed in Sept 2025 (commit 1145fff)
+const ignoredLibraryAppIds = new Set([
+    // already on the site under another ID
+    '1012880', '729040', '209660', '393100', '42680', '42690', '3595230', '2075730',
+    '3595270', '17470', '1173820', '3837340', '12230', '3240220', '12250', '12240',
+    '2149010', '700580', '19840', '33220',
+    // test servers, betas, tools
+    '3081410', '1530870', '1836200', '654310', '623990', '524440', '367540', '993090',
+    // removed on purpose in Sept 2025
+    '278360', '30', '300', '40', '638070', '60', '204880', '63500', '304050',
+]);
+
 function getDismissedNewGames() {
     return new Set(JSON.parse(localStorage.getItem('dismissedNewGames') || '[]'));
 }
@@ -4411,7 +4444,7 @@ async function checkForNewLibraryGames() {
         const known = new Set(Object.values(steamAppIds).map(String));
         const dismissed = getDismissedNewGames();
         newLibraryGames = Object.entries(data.names)
-            .filter(([appId]) => !known.has(appId) && !dismissed.has(appId))
+            .filter(([appId]) => !known.has(appId) && !dismissed.has(appId) && !ignoredLibraryAppIds.has(appId))
             .map(([appId, name]) => ({ appId, name, hours: data.games[appId] || 0 }))
             .sort((a, b) => a.name.localeCompare(b.name));
         updateNewGamesButton();

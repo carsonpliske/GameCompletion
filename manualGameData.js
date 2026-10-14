@@ -735,7 +735,11 @@ const releaseDates = {
     "Sons Of The Forest": 2024,
     "Dead Island 2": 2023,
     "Risk of Rain 2": 2020,
-    "Battlefield 6": 2025
+    "Battlefield 6": 2025,
+    "Call of Duty®: Black Ops 6": 2024,
+    "Prey: Typhon Hunter": 2018,
+    "Vampire Survivors": 2022,
+    "WARDOGS": 2026
 };
 
 // Create the full database with all games
@@ -917,7 +921,8 @@ const allGames = [
     "The Long Dark", "Final Fantasy III (3D Remake)", "L.A. Noire", "Manhunt", "Balatro",
     "Tom Clancy's Splinter Cell: Pandora Tomorrow", "Tom Clancy's The Division 2",
     "F.E.A.R.: Perseus Mandate", "F.E.A.R.: Extraction Point", "F.E.A.R. 3", "F.E.A.R.",
-    "F.E.A.R.2: Project Origin", "Sons Of The Forest", "Dead Island 2", "Risk of Rain 2", "Battlefield 6"
+    "F.E.A.R.2: Project Origin", "Sons Of The Forest", "Dead Island 2", "Risk of Rain 2", "Battlefield 6",
+    "Call of Duty®: Black Ops 6", "Prey: Typhon Hunter", "Vampire Survivors", "WARDOGS"
 ];
 
 // Populate the database
