@@ -1890,11 +1890,45 @@ body.shake {
     text-align: center;
 }
 
-/* Achievement progress tints the cover itself as it rises, since the
-   cover would otherwise hide most of the fill. */
+/* Cover view shows achievement progress as a ring on the cover instead of
+   the classic whole-card fill (the cover would hide most of the fill). */
 .cover-view .achievement-fill {
+    display: none;
+}
+
+.progress-ring {
+    display: none;
+}
+
+.cover-view .progress-ring {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
     z-index: 2;
-    opacity: 0.6;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    /* Ring = conic fill for the percentage, masked to a band */
+    background: conic-gradient(#2ecc71 calc(var(--p) * 1%), rgba(255, 255, 255, 0.18) 0);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.cover-view .progress-ring::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: rgba(10, 15, 20, 0.85);
+}
+
+.cover-view .progress-ring span {
+    position: relative;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
 }
 
 .cover-view .game-content {

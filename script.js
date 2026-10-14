@@ -2772,6 +2772,11 @@ function renderGames() {
                             title="${isTodo ? 'Remove from Active Games' : 'Add to Active Games'}"
                             onclick="toggleGameTodo('${game.title.replace(/'/g, "\\'")}')">★</button>
                 ` : ''}
+                ${hasFill ? `
+                    <div class="progress-ring" style="--p: ${fillPercent}" title="${progressData.currentAchievements}/${achievementData.count} achievements">
+                        <span>${fillPercent}%</span>
+                    </div>
+                ` : ''}
                 <button type="button" class="hide-toggle-overlay ${isHidden ? 'active' : ''}"
                         title="${isHidden ? 'Restore to your list' : "Hide (won't play)"}"
                         onclick="toggleGameHidden('${game.title.replace(/'/g, "\\'")}')">${isHidden ? '👁' : '🚫'}</button>
