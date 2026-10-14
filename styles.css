@@ -2487,3 +2487,30 @@ body.shake {
 .rarity-badge.rarity-uncommon { background: rgba(52, 152, 219, 0.35); }
 .rarity-badge.rarity-rare     { background: rgba(155, 89, 182, 0.45); }
 .rarity-badge.rarity-ultra    { background: rgba(230, 126, 34, 0.55); }
+
+/* ---- Per-game notes ---- */
+.todo-note {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    color: #ffffff;
+    font: inherit;
+    font-size: 0.8rem;
+    resize: vertical;
+}
+
+.todo-note:focus {
+    outline: none;
+    border-color: #66c0f4;
+}
+
+.note-indicator {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    cursor: help;
+}

@@ -2744,6 +2744,8 @@ function renderGames() {
         return;
     }
 
+    const allGameNotes = getGameNotes();
+
     filteredGames.forEach(gameName => {
         const game = gameDatabase[gameName];
         const gameCard = document.createElement('div');
@@ -2759,6 +2761,7 @@ function renderGames() {
         const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
         const isTodo = isGameTodo(game.title);
         const isHidden = showHiddenOnly; // filterGames only lets hidden games through in this mode
+        const gameNote = allGameNotes[game.title];
 
         // Whole-card achievement fill: only for in-progress games we can
         // actually compute a percentage for. Takes over the "in progress"
@@ -2844,6 +2847,7 @@ function renderGames() {
             <div class="game-content">
                 <div class="game-header">
                     <div class="game-title">${game.title}</div>
+                    ${gameNote ? `<span class="note-indicator" title="${escapeHtml(gameNote)}">📝</span>` : ''}
                     <div class="completion-checkbox">
                         <input type="checkbox" id="complete-${gameId}" ${isCompleted ? 'checked' : ''}
                                onchange="toggleGameCompletion('${game.title.replace(/'/g, "\\'")}', this.checked)">
@@ -3319,6 +3323,24 @@ function getTodoGames() {
     return JSON.parse(localStorage.getItem('todoGames') || '[]');
 }
 
+// Per-game free-text notes ("where I left off"), edited from the Active
+// Games sidebar. Saved on every keystroke; the card's 📝 indicator
+// refreshes when the field loses focus (onchange -> filterGames) rather
+// than re-rendering the whole grid mid-typing.
+function getGameNotes() {
+    return JSON.parse(localStorage.getItem('gameNotes') || '{}');
+}
+
+function getGameNote(gameTitle) {
+    return getGameNotes()[gameTitle] || '';
+}
+
+function saveGameNote(gameTitle, text) {
+    const notes = getGameNotes();
+    if (text.trim()) notes[gameTitle] = text; else delete notes[gameTitle];
+    localStorage.setItem('gameNotes', JSON.stringify(notes));
+}
+
 function isGameTodo(gameTitle) {
     return getTodoGames().includes(gameTitle);
 }
@@ -3536,7 +3558,12 @@ function renderTodoSidebar() {
                         <span class="todo-expand-arrow">${isExpanded ? '▲' : '▼'}</span>
                     </div>
                 </div>
-                ${isExpanded ? `<div class="todo-item-details">${achData.hasAchievements ? renderTodoAchievementDetails(title) : '<div class="todo-detail-status">This game has no tracked Steam achievements.</div>'}</div>` : ''}
+                ${isExpanded ? `<div class="todo-item-details">
+                    <textarea class="todo-note" rows="2" placeholder="📝 Where I left off..."
+                              oninput="saveGameNote('${escTitle}', this.value)"
+                              onchange="filterGames()">${escapeHtml(getGameNote(title))}</textarea>
+                    ${achData.hasAchievements ? renderTodoAchievementDetails(title) : '<div class="todo-detail-status">This game has no tracked Steam achievements.</div>'}
+                </div>` : ''}
             </div>
         `;
     }).join('');
@@ -4437,7 +4464,8 @@ function exportGameData() {
         completedGames: JSON.parse(localStorage.getItem('completedGames') || '{}'),
         gameProgress: JSON.parse(localStorage.getItem('gameProgress') || '{}'),
         todoGames: JSON.parse(localStorage.getItem('todoGames') || '[]'),
-        hiddenGames: JSON.parse(localStorage.getItem('hiddenGames') || '[]')
+        hiddenGames: JSON.parse(localStorage.getItem('hiddenGames') || '[]'),
+        gameNotes: getGameNotes()
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -4490,6 +4518,9 @@ function importGameData(event) {
         // leave the current hidden list alone rather than wiping it
         if (Array.isArray(data.hiddenGames)) {
             localStorage.setItem('hiddenGames', JSON.stringify(data.hiddenGames));
+        }
+        if (data.gameNotes && typeof data.gameNotes === 'object') {
+            localStorage.setItem('gameNotes', JSON.stringify(data.gameNotes));
         }
 
         filterGames(); // re-renders the main list and stats for the restored data
