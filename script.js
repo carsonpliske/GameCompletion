@@ -3446,19 +3446,42 @@ function renderTodoAchievementDetails(gameTitle) {
         return `<div class="todo-detail-status todo-detail-error">Couldn't load achievement details: ${escapeHtml(cached.error)}</div>`;
     }
 
+    // Rarity (global "% of players") comes from the steam-achievements
+    // function; older cached responses or games without global stats just
+    // don't have it, and everything below degrades to the plain list.
+    const hasPct = a => typeof a.percent === 'number';
+    const rarest = cached.achievements
+        .filter(a => a.achieved && hasPct(a))
+        .sort((a, b) => a.percent - b.percent)[0];
+    const rarestHtml = rarest
+        ? `<div class="todo-rarest">🏅 Your rarest unlock: <strong>${escapeHtml(rarest.name)}</strong> <span class="rarity-badge ${rarityClass(rarest.percent)}">${rarest.percent}%</span></div>`
+        : '';
+
     const locked = cached.achievements.filter(a => !a.achieved);
     if (locked.length === 0) {
-        return `<div class="todo-detail-status todo-detail-done">🎉 All tracked achievements are unlocked!</div>`;
+        return `${rarestHtml}<div class="todo-detail-status todo-detail-done">🎉 All tracked achievements are unlocked!</div>`;
     }
 
-    return `<ul class="todo-achievement-list">
-        ${locked.map(a => `
+    // Most common first: the easiest remaining achievements lead the list
+    const sorted = locked.slice().sort((a, b) => (hasPct(b) ? b.percent : -1) - (hasPct(a) ? a.percent : -1));
+
+    return `${rarestHtml}<ul class="todo-achievement-list">
+        ${sorted.map(a => `
             <li class="todo-achievement">
-                <span class="todo-achievement-name">${escapeHtml(a.name)}</span>
+                <span class="todo-achievement-name">${escapeHtml(a.name)}${hasPct(a)
+                    ? ` <span class="rarity-badge ${rarityClass(a.percent)}" title="${a.percent}% of players have this">${a.percent}%</span>` : ''}</span>
                 ${a.description ? `<span class="todo-achievement-desc">${escapeHtml(a.description)}</span>` : ''}
             </li>
         `).join('')}
     </ul>`;
+}
+
+// Steam-style rarity tiers by global unlock rate
+function rarityClass(percent) {
+    if (percent < 5) return 'rarity-ultra';
+    if (percent < 20) return 'rarity-rare';
+    if (percent < 50) return 'rarity-uncommon';
+    return 'rarity-common';
 }
 
 function renderTodoSidebar() {

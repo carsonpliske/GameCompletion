@@ -2456,3 +2456,34 @@ body.shake {
         grid-template-columns: 1fr;
     }
 }
+
+/* ---- Achievement rarity (Active Games details) ---- */
+.todo-rarest {
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255, 215, 0, 0.08);
+    font-size: 0.78rem;
+    color: #c7d5e0;
+}
+
+.todo-rarest strong {
+    color: #ffffff;
+}
+
+.rarity-badge {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.5;
+    vertical-align: 1px;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.rarity-badge.rarity-uncommon { background: rgba(52, 152, 219, 0.35); }
+.rarity-badge.rarity-rare     { background: rgba(155, 89, 182, 0.45); }
+.rarity-badge.rarity-ultra    { background: rgba(230, 126, 34, 0.55); }

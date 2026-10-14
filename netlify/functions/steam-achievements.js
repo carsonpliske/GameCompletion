@@ -56,12 +56,30 @@ exports.handler = async (event) => {
             };
         }
 
+        // Global unlock rates ("% of players"), for showing rarity. Public
+        // endpoint, but still has no CORS so it has to go through here.
+        // Best-effort: if it fails, achievements just come back without
+        // a percent and the frontend skips the rarity UI.
+        const globalPercents = {};
+        try {
+            const globalRes = await fetch(`https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid=${appId}`);
+            const globalData = await globalRes.json();
+            const list = globalData && globalData.achievementpercentages && globalData.achievementpercentages.achievements;
+            (list || []).forEach((g) => {
+                const pct = parseFloat(g.percent);
+                if (!Number.isNaN(pct)) globalPercents[g.name] = Math.round(pct * 10) / 10;
+            });
+        } catch (e) {
+            // ignore - rarity is optional
+        }
+
         const unlocked = stats.achievements.filter((a) => a.achieved === 1).length;
         const achievements = stats.achievements.map((a) => ({
             apiname: a.apiname,
             achieved: a.achieved === 1,
             name: a.name || a.apiname,
             description: a.description || '',
+            percent: Object.prototype.hasOwnProperty.call(globalPercents, a.apiname) ? globalPercents[a.apiname] : null,
         }));
 
         return {
