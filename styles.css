@@ -1663,7 +1663,7 @@ body.shake {
     }
 }
 /* ---- Cover view (Steam-library-style wall) ----
-   Opt-in alternative to the classic cards, toggled by #viewModeBtn (see
+   Default layout; the classic cards are toggled back on by #viewModeBtn (see
    toggleViewMode in script.js). Everything here is scoped under
    .cover-view / .game-tile, so the classic layout is unaffected. */
 .view-mode-btn {
@@ -1671,8 +1671,8 @@ body.shake {
 }
 
 .games-list.cover-view {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 24px 18px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 30px 24px;
 }
 
 /* Tilt lives on the tile (not the card) so the glow behind the card
@@ -1798,39 +1798,33 @@ body.shake {
 }
 
 .cover-view .game-content {
-    padding: 10px 10px 8px;
+    padding: 12px 14px 10px;
 }
 
 .cover-view .game-header {
-    margin-bottom: 8px;
-    gap: 6px;
+    margin-bottom: 10px;
+    gap: 8px;
 }
 
 .cover-view .game-header .game-title {
-    font-size: 0.85rem;
+    font-size: 1rem;
     margin-right: 0;
 }
 
-.cover-view .completion-label,
-.cover-view .inprogress-label {
-    width: 20px;
-    height: 20px;
-}
-
 .cover-view .stat-row {
-    margin-bottom: 3px;
+    margin-bottom: 4px;
 }
 
 .cover-view .stat-label,
 .cover-view .stat-time,
 .cover-view .stat-year {
-    font-size: 0.72rem;
+    font-size: 0.82rem;
 }
 
 .cover-view .custom-time-input {
-    width: 64px;
-    padding: 2px 6px;
-    font-size: 0.72rem;
+    width: 72px;
+    padding: 3px 8px;
+    font-size: 0.82rem;
 }
 
 @media (max-width: 768px) {

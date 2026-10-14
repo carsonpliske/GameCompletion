@@ -2861,9 +2861,9 @@ function renderGames() {
 }
 
 // ---- Cover view (Steam-library-style wall) ----
-// Opt-in alternative layout; the classic card layout is untouched and is
-// still the default. Toggled by #viewModeBtn, remembered in localStorage.
-let coverView = localStorage.getItem('gameViewMode') === 'covers';
+// The default layout; the classic card layout is still one click away via
+// #viewModeBtn, and choosing it is remembered in localStorage.
+let coverView = localStorage.getItem('gameViewMode') !== 'classic';
 
 function applyViewMode() {
     gamesListContainer.classList.toggle('cover-view', coverView);
