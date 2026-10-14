@@ -2303,3 +2303,27 @@ body.shake {
     outline: 3px solid #66c0f4;
     outline-offset: 3px;
 }
+
+.stats-backlog {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(102, 192, 244, 0.08);
+    border: 1px solid rgba(102, 192, 244, 0.25);
+}
+
+.stats-backlog-icon {
+    font-size: 1.6rem;
+}
+
+.stats-backlog-main {
+    font-size: 0.9rem;
+    color: #c7d5e0;
+}
+
+.stats-backlog-main strong {
+    color: #ffffff;
+}

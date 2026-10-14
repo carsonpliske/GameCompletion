@@ -3969,7 +3969,30 @@ function computeStats() {
         if (bucket) { bucket.count++; bucket.games.push(t); }
     });
 
+    // Backlog countdown: estimated hours left on everything unfinished (and
+    // not hidden), against the pace of the last 12 weeks of completions
+    const hidden = getHiddenGames();
+    let backlogHours = 0, backlogCount = 0, backlogNoEstimate = 0;
+    titles.forEach(t => {
+        if (getGameCompletionStatus(t) || hidden.has(t)) return;
+        const estimate = getCompletionistSortValue(gameDatabase[t], {});
+        if (estimate > 0) { backlogHours += estimate; backlogCount++; } else { backlogNoEstimate++; }
+    });
+    const PACE_WEEKS = 12;
+    const paceSince = Date.now() - PACE_WEEKS * 7 * 24 * 3600 * 1000;
+    let recentHours = 0;
+    completed.forEach(t => {
+        const data = getGameCompletionData(t);
+        if (!data.completionDate || new Date(data.completionDate).getTime() < paceSince) return;
+        recentHours += parseFloat(data.customTime) || getCompletionistSortValue(gameDatabase[t], {}) || 0;
+    });
+    const weeklyPace = recentHours / PACE_WEEKS;
+    const finishDate = weeklyPace > 0
+        ? new Date(Date.now() + (backlogHours / weeklyPace) * 7 * 24 * 3600 * 1000)
+        : null;
+
     return {
+        backlogHours, backlogCount, backlogNoEstimate, weeklyPace, finishDate,
         total: titles.length,
         completed: completed.length,
         inProgress: getInProgressGamesCount(),
@@ -4063,6 +4086,18 @@ function openStats() {
                     <div class="stats-value">${paceText}</div>
                     <div class="stats-label">Your pace vs. estimates</div>
                     <div class="stats-sub">${paceSub}</div>
+                </div>
+            </div>
+            <div class="stats-backlog">
+                <div class="stats-backlog-icon">⏳</div>
+                <div>
+                    <div class="stats-backlog-main">${s.finishDate
+                        ? `At your recent pace, you'll finish everything around <strong>${s.finishDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}</strong>${(() => {
+                            const years = Math.round((s.finishDate - Date.now()) / (365.25 * 24 * 3600 * 1000));
+                            return years >= 2 ? ` (${years.toLocaleString()} years from now${years > 80 ? ' — maybe hide a few 🙂' : ''})` : '';
+                        })()}`
+                        : 'Complete a game to see when you\'d clear your backlog'}</div>
+                    <div class="stats-sub">${formatHoursShort(s.backlogHours)}h left across ${s.backlogCount} games${s.weeklyPace > 0 ? ` · your pace: ${formatHoursShort(s.weeklyPace)}h/week over the last 12 weeks` : ''}${s.backlogNoEstimate ? ` · ${s.backlogNoEstimate} games with no time estimate aren't counted` : ''}</div>
                 </div>
             </div>
             <div class="stats-chart-title">Games completed per month <span>${yearTotal} in the last 12 months</span></div>
