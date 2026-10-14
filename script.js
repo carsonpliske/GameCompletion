@@ -2784,31 +2784,49 @@ function updateSortDirectionArrow() {
     sortDirectionBtn.title = sortDirection === 'asc' ? 'Ascending (click to toggle)' : 'Descending (click to toggle)';
 }
 
-// Sort value for the "100% Complete" sort. A logged 100% time always wins,
-// achievements or not (e.g. Indiana Jones has no achievements but a real
-// 19.5h completionist time, so it sorts there rather than by main story).
-// Only a no-achievement game with no 100% time falls back to main story
-// time, and lands at the top (value 0) when even that's unknown.
-function getCompletionistSortValue(game) {
-    const compTime = parseFloat(game.completionistTime) || null;
-    if (compTime) {
-        return compTime;
+// Sort value for the "100% Complete" sort:
+// 1. Completed with a logged "My Completion Time" -> that time, always.
+// 2. No achievements -> main story time (100% time is meaningless there),
+//    falling back to 100% time, then 0 (top) when nothing is known.
+// 3. Has achievements -> 100% time, falling back to main story time, then
+//    null (sorted to the bottom) when neither is known.
+function getCompletionistSortValue(game, completedGames) {
+    const entry = completedGames[game.title];
+    const customTime = (entry && typeof entry === 'object' && entry.completed)
+        ? parseFloat(entry.customTime) || null
+        : null;
+    if (customTime) {
+        return customTime;
     }
+
+    const compTime = parseFloat(game.completionistTime) || null;
+    const mainTime = parseFloat(game.timeToBeat) || null;
 
     const achData = typeof getAchievementData !== 'undefined'
         ? getAchievementData(game.title)
         : { hasAchievements: false, count: 0 };
 
     if (achData.hasAchievements && achData.count > 0) {
-        return null;
+        return compTime || mainTime || null;
     }
 
-    return parseFloat(game.timeToBeat) || 0;
+    return mainTime || compTime || 0;
 }
 
 function sortGames() {
     const sortBy = sortSelect.value;
     const isAsc = sortDirection === 'asc';
+
+    // Precompute once rather than per comparison - the comparator runs
+    // O(n log n) times and getCompletionistSortValue would otherwise
+    // re-parse completedGames from localStorage on every call.
+    const completionistSortValues = {};
+    if (sortBy === 'completionistTime') {
+        const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
+        filteredGames.forEach(key => {
+            completionistSortValues[key] = getCompletionistSortValue(gameDatabase[key], completedGames);
+        });
+    }
 
     filteredGames.sort((a, b) => {
         const gameA = gameDatabase[a];
@@ -2833,8 +2851,8 @@ function sortGames() {
                 break;
 
             case 'completionistTime':
-                const compTimeA = getCompletionistSortValue(gameA);
-                const compTimeB = getCompletionistSortValue(gameB);
+                const compTimeA = completionistSortValues[a];
+                const compTimeB = completionistSortValues[b];
 
                 if (compTimeA === null && compTimeB === null) { result = 0; break; }
                 if (compTimeA === null) { result = 1; break; }
