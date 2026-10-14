@@ -2627,6 +2627,26 @@ let currentGames = Object.keys(gameDatabase);
 let filteredGames = Object.keys(gameDatabase);
 let showCompletedOnly = false;
 let showInProgressOnly = false;
+let showHiddenOnly = false;
+
+// "Won't play" list - games hidden from the main list (betas, multiplayer
+// components, anything never getting finished). Toggled per game from the
+// card's 🚫 button; the "Hidden:" stat shows them again so they can be
+// restored.
+function getHiddenGames() {
+    return new Set(JSON.parse(localStorage.getItem('hiddenGames') || '[]'));
+}
+
+function toggleGameHidden(gameTitle) {
+    const hidden = getHiddenGames();
+    const nowHidden = !hidden.has(gameTitle);
+    if (nowHidden) hidden.add(gameTitle); else hidden.delete(gameTitle);
+    localStorage.setItem('hiddenGames', JSON.stringify([...hidden]));
+    filterGames();
+    showInfoToast(nowHidden
+        ? `🚫 Hid ${escapeHtml(gameTitle)} — click "Hidden" to see or restore it`
+        : `👁 ${escapeHtml(gameTitle)} is back in your list`);
+}
 
 const searchInput = document.getElementById('searchInput');
 const sortSelect = document.getElementById('sortSelect');
@@ -2710,6 +2730,7 @@ function renderGames() {
         // Get achievement data
         const achievementData = typeof getAchievementData !== 'undefined' ? getAchievementData(game.title) : { hasAchievements: false, count: 0 };
         const isTodo = isGameTodo(game.title);
+        const isHidden = showHiddenOnly; // filterGames only lets hidden games through in this mode
 
         // Whole-card achievement fill: only for in-progress games we can
         // actually compute a percentage for. Takes over the "in progress"
@@ -2751,6 +2772,9 @@ function renderGames() {
                             title="${isTodo ? 'Remove from Active Games' : 'Add to Active Games'}"
                             onclick="toggleGameTodo('${game.title.replace(/'/g, "\\'")}')">★</button>
                 ` : ''}
+                <button type="button" class="hide-toggle-overlay ${isHidden ? 'active' : ''}"
+                        title="${isHidden ? 'Restore to your list' : "Hide (won't play)"}"
+                        onclick="toggleGameHidden('${game.title.replace(/'/g, "\\'")}')">${isHidden ? '👁' : '🚫'}</button>
                 <a class="game-image-link" href="${steamStoreUrl}" target="_blank" rel="noopener" title="View on Steam Store">
                     <div class="game-image">
                         ${imageHtml}
@@ -2942,10 +2966,17 @@ gamesListContainer.addEventListener('mouseout', (event) => {
 function filterGames() {
     const searchTerm = searchInput.value.toLowerCase();
     const sortBy = sortSelect.value;
+    const hiddenGames = getHiddenGames();
 
     filteredGames = currentGames.filter(gameName => {
         // Basic search filter
         if (!gameName.toLowerCase().includes(searchTerm)) {
+            return false;
+        }
+
+        // Hidden games only appear when the "Hidden:" stat is toggled on,
+        // and then they're the only thing shown
+        if (showHiddenOnly !== hiddenGames.has(gameName)) {
             return false;
         }
 
@@ -3157,6 +3188,11 @@ function updateStats() {
     const inProgressGamesSpan = document.getElementById('inProgressGames');
     if (inProgressGamesSpan) {
         inProgressGamesSpan.textContent = inProgressCount;
+    }
+
+    const hiddenGamesSpan = document.getElementById('hiddenGames');
+    if (hiddenGamesSpan) {
+        hiddenGamesSpan.textContent = getHiddenGames().size;
     }
 }
 
@@ -3805,7 +3841,8 @@ function exportGameData() {
         version: 1,
         completedGames: JSON.parse(localStorage.getItem('completedGames') || '{}'),
         gameProgress: JSON.parse(localStorage.getItem('gameProgress') || '{}'),
-        todoGames: JSON.parse(localStorage.getItem('todoGames') || '[]')
+        todoGames: JSON.parse(localStorage.getItem('todoGames') || '[]'),
+        hiddenGames: JSON.parse(localStorage.getItem('hiddenGames') || '[]')
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -3854,6 +3891,11 @@ function importGameData(event) {
         localStorage.setItem('completedGames', JSON.stringify(data.completedGames));
         localStorage.setItem('gameProgress', JSON.stringify(data.gameProgress));
         localStorage.setItem('todoGames', JSON.stringify(data.todoGames));
+        // Backups made before the hidden list existed don't have this key -
+        // leave the current hidden list alone rather than wiping it
+        if (Array.isArray(data.hiddenGames)) {
+            localStorage.setItem('hiddenGames', JSON.stringify(data.hiddenGames));
+        }
 
         filterGames(); // re-renders the main list and stats for the restored data
         renderTodoSidebar();
@@ -4127,6 +4169,7 @@ if (completedStatToggle) {
         if (showCompletedOnly) {
             showInProgressOnly = false;
             inProgressStatToggle.classList.remove('inprogress-stat-active');
+            setShowHiddenOnly(false);
 
             // "Closest to Completion" only shows in-progress games by design,
             // which would conflict with showing completed-only games and
@@ -4151,6 +4194,7 @@ if (inProgressStatToggle) {
         if (showInProgressOnly) {
             showCompletedOnly = false;
             completedStatToggle.classList.remove('completed-stat-active');
+            setShowHiddenOnly(false);
 
             // Also sort by closest-to-completion, so this tab shows fewest
             // achievements remaining first, not whatever sort was active before
@@ -4164,6 +4208,34 @@ if (inProgressStatToggle) {
             sortSelect.value = 'completionistTime';
             sortDirection = 'asc';
             updateSortDirectionArrow();
+        }
+
+        filterGames();
+    });
+}
+
+const hiddenStatToggle = document.getElementById('hiddenStatToggle');
+
+function setShowHiddenOnly(on) {
+    showHiddenOnly = on;
+    if (hiddenStatToggle) hiddenStatToggle.classList.toggle('hidden-stat-active', on);
+}
+
+if (hiddenStatToggle) {
+    hiddenStatToggle.addEventListener('click', () => {
+        setShowHiddenOnly(!showHiddenOnly);
+
+        // Show every hidden game, not just the completed/in-progress ones
+        if (showHiddenOnly) {
+            showCompletedOnly = false;
+            showInProgressOnly = false;
+            completedStatToggle.classList.remove('completed-stat-active');
+            inProgressStatToggle.classList.remove('inprogress-stat-active');
+            if (sortSelect.value === 'achievementsRemaining') {
+                sortSelect.value = 'completionistTime';
+                sortDirection = 'asc';
+                updateSortDirectionArrow();
+            }
         }
 
         filterGames();
