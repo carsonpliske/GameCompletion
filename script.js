@@ -956,7 +956,7 @@ const steamAppIds = {
     "Max Payne": 12140,
     "Max Payne 2: The Fall of Max Payne": 12150,
     "Max Payne 3": 204100,
-    "Metro 2033": 43160,
+    "Metro 2033": 43110,
     "Metro: Last Light": 43160,
     "Metro Exodus": 412020,
     "Metro 2033 Redux": 286690,
@@ -1138,7 +1138,7 @@ const steamAppIds = {
     "Portal with RTX": 2012840,
     "Call of Duty: Infinite Warfare": 292730,
     "Call of Duty: Ghosts": 209160,
-    "PEAK": "peak.jpg",
+    "PEAK": 3527290,
     "Tom Clancy's Rainbow Six Siege": 359550,
     "Tom Clancy's Rainbow Six® Siege X": 359550,
     "Plants vs. Zombies™ Garden Warfare 2: Deluxe Edition": 1922560,
@@ -1153,7 +1153,7 @@ const steamAppIds = {
     "Dungeon Defenders": 65800,
     "Pacify": 967050,
     "NBA 2K24": 2338770,
-    "Mage Arena": "mageArena.jpg",
+    "Mage Arena": 3716600,
     "Halo: The Master Chief Collection": 976730,
     "Lara Croft GO": 540840,
     "Call of Duty: Advanced Warfare - Multiplayer": 209650,
@@ -1177,7 +1177,7 @@ const steamAppIds = {
     "SpeedRunners": 207140,
     "Call of Duty: Advanced Warfare": 209650,
     "Rust - Staging Branch": 252490,
-    "Adventure Time: Pirates of the Enchiridion": 819500,
+    "Adventure Time: Pirates of the Enchiridion": 728240,
     "Alan Wake's American Nightmare": 202750,
     "Alice: Madness Returns": 19680,
     "American Truck Simulator": 270880,
@@ -1418,7 +1418,7 @@ const steamAppIds = {
     "The LEGO Movie - Videogame": 267530,
     "The LEGO Movie 2 - Videogame": 881320,
     "The LEGO NINJAGO Movie Video Game": 640590,
-    "The Outer Worlds: Spacer's Choice Edition": 578650,
+    "The Outer Worlds: Spacer's Choice Edition": 1920490,
     "The Sims 4": 1222670,
     "The Walking Dead: Michonne": 429570,
     "The Walking Dead: The Telltale Definitive Series": 1449690,
@@ -1688,7 +1688,9 @@ const steamImageCdnOverrides = {
     4249110: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249110/db95a4fbb11b56b6dc065dc0d6c662dab47498e5/header.jpg",
     3230400: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3230400/979a5bffcde6f49d7e56ca9db6980256d3a96ad6/header.jpg",
     3929740: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3929740/fd782a203ee11a3a61f1b2398fc439aa6d1f8640/header.jpg",
-    2807960: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/c12d12ce3c7d217398d3fcad77427bfc9d57c570/header.jpg"
+    2807960: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/c12d12ce3c7d217398d3fcad77427bfc9d57c570/header.jpg",
+    3527290: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/31bac6b2eccf09b368f5e95ce510bae2baf3cfcd/header.jpg",
+    3716600: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3716600/e09e178465c67642c1214736e29d64846d966e52/header.jpg"
 };
 
 // Same CDN migration, but for the portrait library art used by cover view.
@@ -1699,9 +1701,8 @@ const steamImageCdnOverrides = {
 // has no real box art for some older games - their portrait.png is just the
 // header smeared vertically - so those (and the few with no portrait art at
 // all) point at community box art from SteamGridDB instead (cdn2.steamgriddb.com,
-// picked via its API; no key needed to load the images). Keyed by steamAppIds value, so games whose
-// header comes from a local file (PEAK, Mage Arena) can still get Steam's
-// portrait art.
+// picked via its API; no key needed to load the images). Keyed by steamAppIds
+// value.
 const steamLibraryCoverOverrides = {
     205930: "https://cdn2.steamgriddb.com/grid/bdffd8ee443a9507462b7015aa990494.png", // Hitman: Sniper Challenge
     1962660: "https://cdn2.steamgriddb.com/grid/5cef43602bc7486da26ba5fbf4483f43.png", // Call of Duty®: Modern Warfare® II - Open Beta
@@ -1791,8 +1792,8 @@ const steamLibraryCoverOverrides = {
     4092670: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4092670/9e0ea87bf542c76cbf070b878cdc4907a6b78120/library_capsule.jpg", // Within of Static - Ashburg Rental
     4319350: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4319350/dd7127fa31bf949d944764c9ca465a7ed7ac7cdd/library_capsule.jpg", // Within of Static - Northgate Mall
     9040: "https://cdn2.steamgriddb.com/grid/3aaeb67d892ba6bd324d8553ebcbc1ec.png", // Wolfenstein: Enemy Territory
-    "peak.jpg": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/480bd879ac737921bfa2529a6fea15961267ad21/library_600x900.jpg", // PEAK (App ID 3527290)
-    "mageArena.jpg": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3716600/aa52de47d23d5881e1dd71cb523bdacaecfb217c/library_600x900.jpg" // Mage Arena (App ID 3716600)
+    3527290: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/480bd879ac737921bfa2529a6fea15961267ad21/library_600x900.jpg", // PEAK
+    3716600: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3716600/aa52de47d23d5881e1dd71cb523bdacaecfb217c/library_600x900.jpg" // Mage Arena
 };
 
 function getSteamImageUrl(appId, type = 'header') {
