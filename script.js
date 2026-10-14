@@ -1434,7 +1434,7 @@ const steamAppIds = {
     "Tom Clancy's Ghost Recon Future Soldier": 212630,
     "Tom Clancy's Ghost Recon Wildlands": 460930,
     "Tom Clancy's Rainbow Six 3: Gold Edition": 19830,
-    "Tom Clancy's Rainbow Six 3: Athena Sword": 19810,
+    "Tom Clancy's Rainbow Six 3: Athena Sword": 19830, // expansion with no Steam app of its own - sold inside R6 3 Gold
     "Tom Clancy's Rainbow Six: Lockdown": 15000,
     "Tom Clancy's Rainbow Six: Vegas": 13540,
     "Tom Clancy's Rainbow Six: Vegas 2": 15120,
@@ -1466,7 +1466,7 @@ const steamAppIds = {
     "Wizard of Legend": 445980,
     "Wolfenstein 3D": 2270,
     "Wolfenstein 3D: Spear of Destiny": 9000,
-    "Wolfenstein: Enemy Territory": 9040,
+    "Wolfenstein: Enemy Territory": 1873030,
     "Worms": 70640,
     "Worms Armageddon": 217200,
     "Worms Blast": 70650,
@@ -1702,7 +1702,7 @@ const steamImageCdnOverrides = {
 // header smeared vertically - so those (and the few with no portrait art at
 // all) point at community box art from SteamGridDB instead (cdn2.steamgriddb.com,
 // picked via its API; no key needed to load the images). Keyed by steamAppIds
-// value.
+// value, or by game title where two entries share one App ID.
 const steamLibraryCoverOverrides = {
     205930: "https://cdn2.steamgriddb.com/grid/bdffd8ee443a9507462b7015aa990494.png", // Hitman: Sniper Challenge
     1962660: "https://cdn2.steamgriddb.com/grid/5cef43602bc7486da26ba5fbf4483f43.png", // Call of Duty®: Modern Warfare® II - Open Beta
@@ -1774,7 +1774,8 @@ const steamLibraryCoverOverrides = {
     212630: "https://cdn2.steamgriddb.com/grid/b651d34250c1ed8cc010de42406eec68.png", // Tom Clancy's Ghost Recon Future Soldier
     13620: "https://cdn2.steamgriddb.com/grid/99edc3daf630586eae1fa7529e68bb78.png", // Tom Clancy's Ghost Recon: Desert Siege
     13630: "https://cdn2.steamgriddb.com/grid/52836c76fd8dedb1337663e14148fbf8.png", // Tom Clancy's Ghost Recon: Island Thunder
-    19810: "https://cdn2.steamgriddb.com/grid/0ef007c827d338fcef4c44b1dee6bb76.png", // Tom Clancy's Rainbow Six 3: Athena Sword
+    // Keyed by title, not App ID: shares R6 3 Gold's App ID but has its own box art
+    "Tom Clancy's Rainbow Six 3: Athena Sword": "https://cdn2.steamgriddb.com/grid/0ef007c827d338fcef4c44b1dee6bb76.png",
     19830: "https://cdn2.steamgriddb.com/grid/fef4f0c339f100fad1eafe9b89e04b28.png", // Tom Clancy's Rainbow Six 3: Gold Edition
     15000: "https://cdn2.steamgriddb.com/grid/81f00b09baf20f2e5d82e02bb5fdc60f.png", // Tom Clancy's Rainbow Six: Lockdown
     13540: "https://cdn2.steamgriddb.com/grid/6385db535c50d5bfe89bee1e5dd7cedb.png", // Tom Clancy's Rainbow Six: Vegas
@@ -1791,7 +1792,6 @@ const steamLibraryCoverOverrides = {
     485380: "https://cdn2.steamgriddb.com/grid/4385a0335a5daa56f694a86f9e3e599e.png", // Welcome to the Game
     4092670: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4092670/9e0ea87bf542c76cbf070b878cdc4907a6b78120/library_capsule.jpg", // Within of Static - Ashburg Rental
     4319350: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4319350/dd7127fa31bf949d944764c9ca465a7ed7ac7cdd/library_capsule.jpg", // Within of Static - Northgate Mall
-    9040: "https://cdn2.steamgriddb.com/grid/3aaeb67d892ba6bd324d8553ebcbc1ec.png", // Wolfenstein: Enemy Territory
     3527290: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/480bd879ac737921bfa2529a6fea15961267ad21/library_600x900.jpg", // PEAK
     3716600: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3716600/aa52de47d23d5881e1dd71cb523bdacaecfb217c/library_600x900.jpg" // Mage Arena
 };
@@ -2753,7 +2753,9 @@ function renderGames() {
         if (coverView) {
             // Portrait library art first, then the wide header, then
             // TheGamesDB, then the emoji placeholder - see handleCoverImageError.
-            const coverUrl = getSteamImageUrl(game.steamAppId, 'library');
+            // A title key wins over the App ID (for games that share an App ID
+            // with another entry but have their own box art)
+            const coverUrl = steamLibraryCoverOverrides[game.title] || getSteamImageUrl(game.steamAppId, 'library');
             const fallbacks = [steamUrl, fallbackUrl].filter(u => u && u !== coverUrl).join('|');
             imageHtml = `<img src="${coverUrl || fallbackUrl}" alt="${game.title}" loading="lazy" decoding="async" data-fallbacks="${fallbacks}" data-icon="${iconFallback}" onload="handleCoverImageLoad(this)" onerror="handleCoverImageError(this)">`;
         } else {
