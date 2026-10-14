@@ -3732,6 +3732,67 @@ async function syncWithSteam() {
     showInfoToast(`⚡ ${summaryParts.join(' — ')}`);
 }
 
+// Quiet background re-check on page load of just the games actually being
+// played - Active Games plus anything in progress - so their achievement
+// counts are current without running the full ~550-game sweep. Throttled
+// so reloading the page repeatedly doesn't re-hit Steam every time, and
+// only re-renders/toasts if something actually changed.
+const AUTO_SYNC_MIN_INTERVAL_MS = 10 * 60 * 1000;
+
+async function autoSyncActiveGames() {
+    const last = parseInt(localStorage.getItem('lastAutoSync') || '0', 10);
+    if (Date.now() - last < AUTO_SYNC_MIN_INTERVAL_MS) return;
+
+    const titles = new Set(getTodoGames());
+    Object.keys(gameDatabase).forEach(title => {
+        if (getGameProgressData(title).inProgress) titles.add(title);
+    });
+    const candidates = [...titles].filter(title =>
+        gameDatabase[title] && getAchievementData(title).hasAchievements && !getGameCompletionStatus(title));
+    if (candidates.length === 0) return;
+
+    localStorage.setItem('lastAutoSync', String(Date.now()));
+
+    let ownedGames = {};
+    try {
+        const ownedRes = await fetch('/.netlify/functions/steam-owned-games');
+        const ownedData = await ownedRes.json();
+        if (ownedRes.ok && ownedData.available) ownedGames = ownedData.games || {};
+    } catch (e) {
+        // Functions unreachable (e.g. local http-server) - nothing to sync against
+        return;
+    }
+
+    const completed = [];
+    let updated = 0;
+
+    for (const title of candidates) {
+        const before = getGameProgressData(title).currentAchievements;
+        try {
+            const result = await syncGameAchievements(title, ownedGames);
+            if (result.ok && result.status === 'completed') {
+                completed.push(title);
+            } else if (result.ok && result.status === 'inProgress' && result.unlocked !== before) {
+                updated++;
+            }
+        } catch (e) {
+            // Skip this game; the next auto-sync or a manual sync will retry it
+        }
+        await new Promise(r => setTimeout(r, 400));
+    }
+
+    if (completed.length === 0 && updated === 0) return;
+
+    filterGames();
+    renderTodoSidebar();
+    renderRecentSidebar();
+
+    const parts = [];
+    if (completed.length) parts.push(`🎉 Completed: ${completed.map(escapeHtml).join(', ')}`);
+    if (updated) parts.push(`✅ Updated achievement progress on ${updated} game${updated === 1 ? '' : 's'}`);
+    showInfoToast(parts.join(' — '));
+}
+
 // --- Backup / restore ---
 // Everything this app tracks lives only in this browser's localStorage -
 // there's no server-side account, so clearing site data or switching
@@ -4125,6 +4186,12 @@ updateStats();
 renderGames();
 renderTodoSidebar();
 renderRecentSidebar();
+
+// Give the page a moment to finish painting before hitting the network.
+// Skipped behind the password gate - no point syncing for a locked page.
+if (localStorage.getItem('siteUnlocked') === 'true') {
+    setTimeout(autoSyncActiveGames, 1500);
+}
 
 console.log(`Loaded ${currentGames.length} games!`);
 
