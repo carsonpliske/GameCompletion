@@ -79,6 +79,7 @@ exports.handler = async (event) => {
             achieved: a.achieved === 1,
             name: a.name || a.apiname,
             description: a.description || '',
+            unlocktime: a.unlocktime || 0, // unix seconds; 0 when locked
             percent: Object.prototype.hasOwnProperty.call(globalPercents, a.apiname) ? globalPercents[a.apiname] : null,
         }));
 

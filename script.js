@@ -4074,8 +4074,8 @@ function formatHoursShort(h) {
     return h >= 100 ? Math.round(h).toLocaleString() : (Math.round(h * 10) / 10).toString();
 }
 
-function renderMonthlyChart(months) {
-    const W = 560, H = 200, padL = 28, padB = 26, padT = 12;
+function renderMonthlyChart(months, W = 560) {
+    const H = 200, padL = 28, padB = 26, padT = 12;
     const plotW = W - padL, plotH = H - padB - padT;
     const max = Math.max(1, ...months.map(m => m.count));
     // Whole-number gridlines, at most 4 of them
@@ -4133,7 +4133,7 @@ function openStats() {
         <div class="up-next-card stats-card" role="dialog" aria-label="Stats">
             <button type="button" class="up-next-close" title="Close" onclick="closeStats()">✕</button>
             <div class="up-next-heading">📊 Your Stats</div>
-            <button type="button" class="yir-open" onclick="openYearInReview()">🏆 Year in Review</button>
+            <button type="button" class="yir-open" onclick="closeStats(); openYearInReview()">🏆 Year in Review</button>
             <div class="stats-tiles">
                 <div class="stats-tile">
                     <div class="stats-value">${pct}%</div>
@@ -4156,18 +4156,6 @@ function openStats() {
                     <div class="stats-sub">${paceSub}</div>
                 </div>
             </div>
-            <div class="stats-backlog">
-                <div class="stats-backlog-icon">⏳</div>
-                <div>
-                    <div class="stats-backlog-main">${s.finishDate
-                        ? `At your recent pace, you'll finish everything around <strong>${s.finishDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}</strong>${(() => {
-                            const years = Math.round((s.finishDate - Date.now()) / (365.25 * 24 * 3600 * 1000));
-                            return years >= 2 ? ` (${years.toLocaleString()} years from now${years > 80 ? ' — maybe hide a few 🙂' : ''})` : '';
-                        })()}`
-                        : 'Complete a game to see when you\'d clear your backlog'}</div>
-                    <div class="stats-sub">${formatHoursShort(s.backlogHours)}h left across ${s.backlogCount} games${s.weeklyPace > 0 ? ` · your pace: ${formatHoursShort(s.weeklyPace)}h/week over the last 12 weeks` : ''}${s.backlogNoEstimate ? ` · ${s.backlogNoEstimate} games with no time estimate aren't counted` : ''}</div>
-                </div>
-            </div>
             <div class="stats-chart-title">Games completed per month <span>${yearTotal} in the last 12 months</span></div>
             <div class="stats-chart-wrap">
                 ${renderMonthlyChart(s.months)}
@@ -4183,24 +4171,7 @@ function openStats() {
             </details>
         </div>`;
 
-    // Per-bar hover tooltip
-    const wrap = modal.querySelector('.stats-chart-wrap');
-    const tooltip = modal.querySelector('.stats-tooltip');
-    wrap.querySelectorAll('.stats-hit').forEach(hit => {
-        hit.addEventListener('mouseenter', () => {
-            const games = hit.dataset.games ? hit.dataset.games.split('\n') : [];
-            tooltip.innerHTML = `<strong>${escapeHtml(hit.dataset.tip)}</strong>${games.map(g => `<div>${escapeHtml(g)}</div>`).join('')}`;
-            tooltip.hidden = false;
-            hit.classList.add('active');
-            // Beside the hovered column, never on top of its bar
-            const r = hit.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
-            const onRight = r.left - wr.left > wr.width / 2;
-            tooltip.style.left = onRight
-                ? `${r.left - wr.left - tooltip.offsetWidth - 6}px`
-                : `${r.right - wr.left + 6}px`;
-        });
-        hit.addEventListener('mouseleave', () => { tooltip.hidden = true; hit.classList.remove('active'); });
-    });
+    attachChartTooltips(modal.querySelector('.stats-chart-wrap'));
 
     modal.classList.add('open');
 }
@@ -4248,61 +4219,257 @@ function computeYearInReview(year) {
     };
 }
 
+// Hover tooltips for a chart produced by renderMonthlyChart (the wrap holds
+// the svg plus an empty .stats-tooltip). Shown beside the hovered column,
+// never on top of its bar.
+function attachChartTooltips(wrap) {
+    const tooltip = wrap.querySelector('.stats-tooltip');
+    wrap.querySelectorAll('.stats-hit').forEach(hit => {
+        hit.addEventListener('mouseenter', () => {
+            const games = hit.dataset.games ? hit.dataset.games.split('\n') : [];
+            tooltip.innerHTML = `<strong>${escapeHtml(hit.dataset.tip)}</strong>${games.map(g => `<div>${escapeHtml(g)}</div>`).join('')}`;
+            tooltip.hidden = false;
+            hit.classList.add('active');
+            const r = hit.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+            const onRight = r.left - wr.left > wr.width / 2;
+            tooltip.style.left = onRight
+                ? `${r.left - wr.left - tooltip.offsetWidth - 6}px`
+                : `${r.right - wr.left + 6}px`;
+        });
+        hit.addEventListener('mouseleave', () => { tooltip.hidden = true; hit.classList.remove('active'); });
+    });
+}
+
+// ---- Page tabs: Library / Year in Review ----
+// The review page lives at #year-in-review so it can be bookmarked; the
+// library is everything else.
+let reviewYear = null;
+
+function showPage() {
+    const review = location.hash === '#year-in-review';
+    document.getElementById('libraryPage').hidden = review;
+    document.getElementById('reviewPage').hidden = !review;
+    document.querySelectorAll('.page-tab').forEach(tab => {
+        const active = tab.dataset.page === (review ? 'review' : 'library');
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', active);
+    });
+    if (review) renderReviewPage();
+}
+
+window.addEventListener('hashchange', showPage);
+
 function openYearInReview(year) {
+    if (year) reviewYear = year;
+    if (location.hash === '#year-in-review') renderReviewPage();
+    else location.hash = 'year-in-review';
+    window.scrollTo({ top: 0 });
+}
+
+function reviewCoverImg(title) {
+    const game = gameDatabase[title];
+    return `<img src="${getCoverImageUrl(game)}" alt="${escapeHtml(title)}" title="${escapeHtml(title)}" loading="lazy"
+                 onerror="this.onerror=null; this.src='${getSteamImageUrl(game.steamAppId, 'header') || ''}'">`;
+}
+
+function renderBacklogHtml(s) {
+    let main = 'Complete a game to see when you\'d clear your backlog';
+    if (s.finishDate) {
+        const years = Math.round((s.finishDate - Date.now()) / (365.25 * 24 * 3600 * 1000));
+        main = `At your recent pace, you'll finish everything around <strong>${s.finishDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}</strong>`
+            + (years >= 2 ? ` (${years.toLocaleString()} years from now${years > 80 ? ' — maybe hide a few 🙂' : ''})` : '');
+    }
+    const details = [`${formatHoursShort(s.backlogHours)}h left across ${s.backlogCount} games`];
+    if (s.weeklyPace > 0) details.push(`your pace: ${formatHoursShort(s.weeklyPace)}h/week over the last 12 weeks`);
+    if (s.backlogNoEstimate) details.push(`${s.backlogNoEstimate} games with no time estimate aren't counted`);
+    return `
+        <div class="stats-backlog">
+            <div class="stats-backlog-icon">⏳</div>
+            <div>
+                <div class="stats-backlog-main">${main}</div>
+                <div class="stats-sub">${details.join(' · ')}</div>
+            </div>
+        </div>`;
+}
+
+function renderReviewPage() {
+    const page = document.getElementById('reviewPage');
+    const thisYear = new Date().getFullYear();
     const years = getCompletionYears();
-    if (!years.length) {
-        showInfoToast('🏆 Complete a game (with a completion date) to unlock your Year in Review.');
-        return;
-    }
-    year = year || years[0];
+    if (!years.includes(thisYear)) years.unshift(thisYear); // always offer the current year
+    years.sort((a, b) => b - a);
+    const year = years.includes(reviewYear) ? reviewYear : years[0];
+    reviewYear = year;
+
     const r = computeYearInReview(year);
-    closeStats();
+    const s = computeStats();
+    const months = Array.from({ length: 12 }, (_, m) => ({ year, month: m, count: 0, games: [] }));
+    r.games.forEach(g => { const b = months[g.date.getMonth()]; b.count++; b.games.push(g.title); });
 
-    let modal = document.getElementById('yirModal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'yirModal';
-        modal.className = 'up-next-modal';
-        modal.addEventListener('click', e => { if (e.target === modal) closeYearInReview(); });
-        document.body.appendChild(modal);
-    }
-
-    const coverFor = title => {
-        const game = gameDatabase[title];
-        return `<img src="${getCoverImageUrl(game)}" alt="${escapeHtml(title)}" title="${escapeHtml(title)}" loading="lazy"
-                     onerror="this.onerror=null; this.src='${getSteamImageUrl(game.steamAppId, 'header') || ''}'">`;
-    };
     const highlight = (label, g) => g ? `
         <div class="yir-highlight">
-            ${coverFor(g.title)}
+            ${reviewCoverImg(g.title)}
             <div><div class="stats-label">${label}</div><div class="yir-hl-title">${escapeHtml(g.title)}</div>
             <div class="stats-sub">${formatHoursShort(g.hours)}h</div></div>
         </div>` : '';
+    const n = r.games.length;
 
-    modal.innerHTML = `
-        <div class="up-next-card yir-card" role="dialog" aria-label="Year in Review">
-            <button type="button" class="up-next-close" title="Close" onclick="closeYearInReview()">✕</button>
-            <div class="yir-years">${years.map(y =>
-                `<button type="button" class="filter-chip ${y === year ? 'active' : ''}" onclick="openYearInReview(${y})">${y}</button>`).join('')}</div>
-            <div class="yir-hero">
-                <div class="yir-kicker">Your ${year} in games</div>
-                <div class="yir-big">${r.games.length}</div>
-                <div class="yir-big-label">game${r.games.length === 1 ? '' : 's'} beaten</div>
+    page.innerHTML = `
+        <div class="yir-years">${years.map(y =>
+            `<button type="button" class="filter-chip ${y === year ? 'active' : ''}" onclick="openYearInReview(${y})">${y}</button>`).join('')}</div>
+
+        <section class="review-hero">
+            <div class="yir-kicker">Your ${year} in games</div>
+            <div class="yir-big">${n}</div>
+            <div class="yir-big-label">${n ? `game${n === 1 ? '' : 's'} beaten` : `games beaten so far — finish one to start your ${year}`}</div>
+        </section>
+
+        <div class="stats-tiles review-tiles">
+            <div class="stats-tile"><div class="stats-value">${formatHoursShort(r.hours)}h</div><div class="stats-label">Hours logged</div><div class="stats-sub">on completed games</div></div>
+            <div class="stats-tile"><div class="stats-value">${r.achievements.toLocaleString()}</div><div class="stats-label">Achievements 100%'d</div><div class="stats-sub">from games you completed</div></div>
+            <div class="stats-tile"><div class="stats-value">${r.busiestMonth ? r.busiestMonth.slice(0, 3) : '—'}</div><div class="stats-label">Busiest month</div><div class="stats-sub">${r.busiestMonth ? `${r.busiestCount} completed` : 'no completions yet'}</div></div>
+            <div class="stats-tile"><div class="stats-value" id="reviewUnlockCount">…</div><div class="stats-label">Achievements unlocked</div><div class="stats-sub">in ${year}, any game</div></div>
+        </div>
+
+        ${r.fastest || r.longest ? `<div class="yir-highlights">${highlight('⚡ Fastest', r.fastest)}${highlight('🐢 Longest', r.longest)}</div>` : ''}
+
+        <section class="review-section">
+            <h2>🏅 Rarest achievements of ${year}</h2>
+            <div id="reviewRarest" class="stats-sub">Checking your achievements…</div>
+        </section>
+
+        <section class="review-section">
+            <h2>📅 Month by month</h2>
+            <div class="stats-chart-wrap">
+                ${renderMonthlyChart(months, 840)}
+                <div class="stats-tooltip" hidden></div>
             </div>
-            <div class="stats-tiles yir-tiles">
-                <div class="stats-tile"><div class="stats-value">${formatHoursShort(r.hours)}h</div><div class="stats-label">Hours logged</div></div>
-                <div class="stats-tile"><div class="stats-value">${r.achievements.toLocaleString()}</div><div class="stats-label">Achievements earned</div></div>
-                <div class="stats-tile"><div class="stats-value">${r.busiestMonth ? r.busiestMonth.slice(0, 3) : '—'}</div><div class="stats-label">Busiest month</div><div class="stats-sub">${r.busiestCount} completed</div></div>
+            <details class="stats-table">
+                <summary>Show as table</summary>
+                <table>
+                    <thead><tr><th>Month</th><th>Completed</th></tr></thead>
+                    <tbody>${months.map(m => `<tr><td>${new Date(year, m.month, 1).toLocaleString('en-US', { month: 'long' })}</td><td>${m.count}</td></tr>`).join('')}</tbody>
+                </table>
+            </details>
+        </section>
+
+        <section class="review-section">
+            <h2>⏳ Looking ahead</h2>
+            ${renderBacklogHtml(s)}
+        </section>
+
+        ${n ? `<section class="review-section">
+            <h2>🎮 Everything you beat in ${year}</h2>
+            <div class="yir-collage review-collage">${r.games.map(g => reviewCoverImg(g.title)).join('')}</div>
+        </section>` : ''}
+
+        <button type="button" class="yir-copy" onclick="copyYearInReview(${year})">📋 Copy summary</button>
+    `;
+
+    attachChartTooltips(page.querySelector('.stats-chart-wrap'));
+    loadRarestAchievements(year);
+}
+
+// ---- Rarest achievements of the year ----
+// Scans the games you could plausibly have unlocked achievements in during
+// that year (completed that year or the next, in progress, or on Active
+// Games) via the steam-achievements function, which returns unlock times
+// and global "% of players". Results are cached per App ID for 12 hours,
+// trimmed to just the unlocked achievements, so revisiting the tab is
+// instant and switching years doesn't re-hit Steam.
+const ACHIEVEMENT_SCAN_TTL_MS = 12 * 60 * 60 * 1000;
+const rarestByYear = {};
+let rarityScanToken = 0;
+
+function getAchievementScanCache() {
+    return JSON.parse(localStorage.getItem('achievementScanCache') || '{}');
+}
+
+async function fetchUnlockedAchievementsCached(appId) {
+    const cache = getAchievementScanCache();
+    const hit = cache[appId];
+    if (hit && Date.now() - hit.fetchedAt < ACHIEVEMENT_SCAN_TTL_MS) return { list: hit.unlocked, cached: true };
+
+    const res = await fetch(`/.netlify/functions/steam-achievements?appid=${appId}`);
+    const data = await res.json(); // throws on the local server (no functions) - caller handles it
+    const unlocked = (res.ok && data.available ? data.achievements : [])
+        .filter(a => a.achieved && a.unlocktime)
+        .map(a => ({ n: a.name, p: typeof a.percent === 'number' ? a.percent : null, t: a.unlocktime }));
+    cache[appId] = { fetchedAt: Date.now(), unlocked };
+    try {
+        localStorage.setItem('achievementScanCache', JSON.stringify(cache));
+    } catch (e) {
+        // Storage full - still usable for this session, just not cached
+    }
+    return { list: unlocked, cached: false };
+}
+
+async function loadRarestAchievements(year) {
+    const token = ++rarityScanToken;
+    const out = () => document.getElementById('reviewRarest');
+    const countEl = () => document.getElementById('reviewUnlockCount');
+
+    const todo = new Set(getTodoGames());
+    const candidates = new Map(); // appId -> title
+    Object.keys(gameDatabase).forEach(title => {
+        if (!getAchievementData(title).hasAchievements) return;
+        const appId = getSteamAppId(title);
+        if (!appId || !/^\d+$/.test(String(appId))) return;
+        const data = getGameCompletionData(title);
+        const doneYear = data.completed && data.completionDate ? new Date(data.completionDate).getFullYear() : null;
+        if (doneYear === year || doneYear === year + 1 || getGameProgressData(title).inProgress || todo.has(title)) {
+            if (!candidates.has(String(appId))) candidates.set(String(appId), title);
+        }
+    });
+
+    if (candidates.size === 0) {
+        out().textContent = `No achievement games to check for ${year} yet.`;
+        countEl().textContent = '—';
+        return;
+    }
+
+    const found = [];
+    let unlockedThisYear = 0;
+    let i = 0;
+    for (const [appId, title] of candidates) {
+        if (token !== rarityScanToken || !out()) return; // year switched or page left
+        i++;
+        out().textContent = `Checking your achievements… ${i}/${candidates.size}`;
+        let result;
+        try {
+            result = await fetchUnlockedAchievementsCached(appId);
+        } catch (e) {
+            out().textContent = 'Rarity data loads from Steam on the live site.';
+            countEl().textContent = '—';
+            return;
+        }
+        result.list.forEach(a => {
+            if (new Date(a.t * 1000).getFullYear() !== year) return;
+            unlockedThisYear++;
+            if (a.p !== null) found.push({ title, name: a.n, percent: a.p, date: new Date(a.t * 1000) });
+        });
+        if (!result.cached) await new Promise(r => setTimeout(r, 250));
+    }
+    if (token !== rarityScanToken || !out()) return;
+
+    const rarest = found.sort((a, b) => a.percent - b.percent).slice(0, 10);
+    rarestByYear[year] = rarest;
+    countEl().textContent = unlockedThisYear.toLocaleString();
+
+    if (rarest.length === 0) {
+        out().textContent = `No rarity data for achievements you unlocked in ${year}.`;
+        return;
+    }
+    out().className = '';
+    out().innerHTML = `<ol class="rarest-list">${rarest.map((a, idx) => `
+        <li>
+            <span class="rarest-rank">${idx + 1}</span>
+            ${reviewCoverImg(a.title)}
+            <div class="rarest-text">
+                <div class="rarest-name">${escapeHtml(a.name)} <span class="rarity-badge ${rarityClass(a.percent)}" title="${a.percent}% of players have this">${a.percent}%</span></div>
+                <div class="stats-sub">${escapeHtml(a.title)} · ${a.date.toLocaleString('en-US', { month: 'short', day: 'numeric' })}</div>
             </div>
-            <div class="yir-highlights">
-                ${highlight('⚡ Fastest', r.fastest)}
-                ${highlight('🐢 Longest', r.longest)}
-            </div>
-            <div class="stats-chart-title">Everything you beat in ${year}</div>
-            <div class="yir-collage">${r.games.map(g => coverFor(g.title)).join('')}</div>
-            <button type="button" class="yir-copy" onclick="copyYearInReview(${year})">📋 Copy summary</button>
-        </div>`;
-    modal.classList.add('open');
+        </li>`).join('')}</ol>`;
 }
 
 function copyYearInReview(year) {
@@ -4313,6 +4480,7 @@ function copyYearInReview(year) {
         r.fastest ? `⚡ Fastest: ${r.fastest.title} (${formatHoursShort(r.fastest.hours)}h)` : null,
         r.longest ? `🐢 Longest: ${r.longest.title} (${formatHoursShort(r.longest.hours)}h)` : null,
         r.busiestMonth ? `📅 Busiest month: ${r.busiestMonth} (${r.busiestCount})` : null,
+        ...(rarestByYear[year] || []).slice(0, 3).map((a, i) => `${i === 0 ? '🏅 Rarest unlocks: ' : '   '}${a.name} - ${a.title} (${a.percent}% of players)`),
         '',
         ...r.games.map(g => `• ${g.title}`),
     ].filter(l => l !== null);
@@ -4320,15 +4488,6 @@ function copyYearInReview(year) {
         .then(() => showInfoToast('📋 Year in Review copied to clipboard'))
         .catch(() => showInfoToast('⚠️ Couldn\'t access the clipboard'));
 }
-
-function closeYearInReview() {
-    const modal = document.getElementById('yirModal');
-    if (modal) modal.classList.remove('open');
-}
-
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeYearInReview();
-});
 
 function closeStats() {
     const modal = document.getElementById('statsModal');
@@ -4378,6 +4537,7 @@ document.addEventListener('keydown', e => {
     }
     if (e.ctrlKey || e.altKey || e.metaKey) return;
     if (document.querySelector('.up-next-modal.open')) return; // popups own the keyboard (Esc handled there)
+    if (document.getElementById('libraryPage').hidden) return; // shortcuts are for the library tab
 
     const items = getGameItems();
     const cols = getGridColumns(items);
@@ -5003,6 +5163,7 @@ sortDirection = 'asc';
 updateSortDirectionArrow();
 applyViewMode();
 filterGames();
+showPage();
 
 console.log('About to call updateStats and renderGames...');
 console.log('currentGames length:', currentGames.length);

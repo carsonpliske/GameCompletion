@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=56">
+    <link rel="stylesheet" href="styles.css?v=57">
 </head>
 <body>
     <div id="loginGate" class="login-gate">
@@ -60,6 +60,16 @@
             <p>Sort your Steam games by time to beat</p>
         </header>
 
+        <nav class="page-tabs" role="tablist">
+            <a href="#" class="page-tab" data-page="library" role="tab">🎮 Library</a>
+            <a href="#year-in-review" class="page-tab" data-page="review" role="tab">🏆 Year in Review</a>
+        </nav>
+
+        <div id="reviewPage" class="review-page" hidden>
+            <!-- Populated by renderReviewPage() -->
+        </div>
+
+        <div id="libraryPage">
         <div class="controls">
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="Search games... (press / )">
@@ -123,12 +133,13 @@
         <div id="gamesList" class="games-list">
             <!-- Games will be populated here -->
         </div>
+        </div><!-- /#libraryPage -->
     </div>
 
     <script src="manualGameData.js?v=10"></script>
     <script src="hltbGameData.js?v=10"></script>
     <script src="achievementData.js?v=14"></script>
     <script src="achievementGuides.js?v=1"></script>
-    <script src="script.js?v=72"></script>
+    <script src="script.js?v=74"></script>
 </body>
 </html>

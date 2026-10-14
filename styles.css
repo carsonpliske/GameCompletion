@@ -2580,3 +2580,139 @@ body.shake {
 .new-games-dismiss-all {
     background: #4b5a66;
 }
+
+/* ---- Page tabs: Library / Year in Review ---- */
+.page-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: -6px 0 22px;
+}
+
+.page-tab {
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #c7d5e0;
+    font-weight: 700;
+    text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.page-tab:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.page-tab.active {
+    background: rgba(102, 192, 244, 0.25);
+    border-color: #66c0f4;
+    color: #ffffff;
+}
+
+/* ---- Year in Review page (reuses .stats-* / .yir-* pieces) ---- */
+.review-page {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    padding: 28px;
+    border-radius: 16px;
+    background: radial-gradient(circle at 50% 0%, rgba(42, 63, 90, 0.95) 0%, rgba(27, 40, 56, 0.95) 55%);
+    border: 1px solid #2a475e;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    color: #ffffff;
+    text-align: center;
+}
+
+.review-page[hidden] {
+    display: none;
+}
+
+.review-hero {
+    margin: 6px 0 22px;
+}
+
+.review-tiles {
+    text-align: left;
+}
+
+.review-section {
+    margin-top: 28px;
+    text-align: left;
+}
+
+.review-section h2 {
+    margin: 0 0 12px;
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+.review-page .stats-backlog {
+    margin-bottom: 0;
+}
+
+.review-collage {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+}
+
+.review-page .yir-copy {
+    margin-top: 26px;
+}
+
+.rarest-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.rarest-list li {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.rarest-rank {
+    width: 18px;
+    flex-shrink: 0;
+    color: #8f98a0;
+    font-weight: 800;
+    text-align: center;
+}
+
+.rarest-list img {
+    width: 34px;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.rarest-text {
+    min-width: 0;
+}
+
+.rarest-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+@media (max-width: 700px) {
+    .review-page {
+        padding: 18px;
+    }
+
+    .rarest-list {
+        grid-template-columns: 1fr;
+    }
+
+    .review-tiles {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
