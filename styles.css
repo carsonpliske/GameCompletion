@@ -2716,3 +2716,12 @@ body.shake {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* Wide screens (1440p and up): room for a 5th cover per row at the same
+   cover size. 2340px is where a 1500px container still clears both
+   sidebars (left ends at 360px, right starts 400px from the edge). */
+@media (min-width: 2340px) {
+    .container {
+        max-width: 1500px;
+    }
+}
