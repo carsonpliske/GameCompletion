@@ -2630,6 +2630,33 @@ let showCompletedOnly = false;
 let showInProgressOnly = false;
 let showHiddenOnly = false;
 
+// Stackable quick filters (the chip row under the stats). All active chips
+// must pass (AND). "Under 5h" uses the same hours as the 100% sort, so a
+// logged "My Time" or the main-story fallback counts the same way.
+const activeFilterChips = new Set();
+
+function passesFilterChips(title, completedGamesData) {
+    if (activeFilterChips.size === 0) return true;
+    if (activeFilterChips.has('under5')) {
+        const hours = getCompletionistSortValue(gameDatabase[title], completedGamesData);
+        if (!(hours > 0 && hours <= 5)) return false;
+    }
+    if (activeFilterChips.has('notStarted')
+        && (getGameCompletionStatus(title) || getGameProgressData(title).inProgress)) return false;
+    if (activeFilterChips.has('noAchievements') && getAchievementData(title).hasAchievements) return false;
+    if (activeFilterChips.has('hasGuide')
+        && !(typeof getAchievementGuideUrl !== 'undefined' && getAchievementGuideUrl(title))) return false;
+    return true;
+}
+
+function toggleFilterChip(btn) {
+    const key = btn.dataset.chip;
+    if (activeFilterChips.has(key)) activeFilterChips.delete(key); else activeFilterChips.add(key);
+    btn.classList.toggle('active', activeFilterChips.has(key));
+    btn.setAttribute('aria-pressed', activeFilterChips.has(key));
+    filterGames();
+}
+
 // "Won't play" list - games hidden from the main list (betas, multiplayer
 // components, anything never getting finished). Toggled per game from the
 // card's 🚫 button; the "Hidden:" stat shows them again so they can be
@@ -2975,8 +3002,15 @@ function filterGames() {
     const searchTerm = searchInput.value.toLowerCase();
     const sortBy = sortSelect.value;
     const hiddenGames = getHiddenGames();
+    const completedGamesData = activeFilterChips.has('under5')
+        ? JSON.parse(localStorage.getItem('completedGames') || '{}')
+        : null;
 
     filteredGames = currentGames.filter(gameName => {
+        if (!passesFilterChips(gameName, completedGamesData)) {
+            return false;
+        }
+
         // Basic search filter
         if (!gameName.toLowerCase().includes(searchTerm)) {
             return false;

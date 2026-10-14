@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Game Organizer</title>
-    <link rel="stylesheet" href="styles.css?v=49">
+    <link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body>
     <div id="loginGate" class="login-gate">
@@ -112,6 +112,13 @@
             </div>
         </div>
 
+        <div class="filter-chips" role="group" aria-label="Quick filters">
+            <button type="button" class="filter-chip" data-chip="under5" aria-pressed="false" onclick="toggleFilterChip(this)">⏱️ Under 5h</button>
+            <button type="button" class="filter-chip" data-chip="notStarted" aria-pressed="false" onclick="toggleFilterChip(this)">🆕 Not started</button>
+            <button type="button" class="filter-chip" data-chip="noAchievements" aria-pressed="false" onclick="toggleFilterChip(this)">🚫🏆 No achievements</button>
+            <button type="button" class="filter-chip" data-chip="hasGuide" aria-pressed="false" onclick="toggleFilterChip(this)">📖 Has guide</button>
+        </div>
+
         <div id="gamesList" class="games-list">
             <!-- Games will be populated here -->
         </div>
@@ -121,6 +128,6 @@
     <script src="hltbGameData.js?v=9"></script>
     <script src="achievementData.js?v=13"></script>
     <script src="achievementGuides.js?v=1"></script>
-    <script src="script.js?v=64"></script>
+    <script src="script.js?v=65"></script>
 </body>
 </html>

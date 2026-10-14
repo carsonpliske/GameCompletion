@@ -2265,3 +2265,34 @@ body.shake {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* ---- Quick filter chips ---- */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -6px 0 20px;
+}
+
+.filter-chip {
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #c7d5e0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.filter-chip:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.filter-chip.active {
+    background: rgba(102, 192, 244, 0.25);
+    border-color: #66c0f4;
+    color: #ffffff;
+}
