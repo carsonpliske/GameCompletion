@@ -3895,6 +3895,188 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeUpNext();
 });
 
+// ---- Stats dashboard ----
+// Everything here is derived from data already tracked (completion dates,
+// logged times, estimates) - nothing new is stored.
+function computeStats() {
+    const completedGames = JSON.parse(localStorage.getItem('completedGames') || '{}');
+    const titles = Object.keys(gameDatabase);
+    const completed = titles.filter(t => getGameCompletionStatus(t));
+
+    let loggedHours = 0;
+    let loggedCount = 0;
+    let paceYours = 0;
+    let paceEstimate = 0;
+    completed.forEach(t => {
+        const hours = parseFloat(getGameCompletionData(t).customTime) || 0;
+        if (!hours) return;
+        loggedHours += hours;
+        loggedCount++;
+        // Estimate = what the 100% sort would use if no time were logged
+        const estimate = getCompletionistSortValue(gameDatabase[t], {});
+        if (estimate > 0) {
+            paceYours += hours;
+            paceEstimate += estimate;
+        }
+    });
+
+    // Completions per month, last 12 months including this one
+    const now = new Date();
+    const months = [];
+    for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({ year: d.getFullYear(), month: d.getMonth(), count: 0, games: [] });
+    }
+    completed.forEach(t => {
+        const date = getGameCompletionData(t).completionDate;
+        if (!date) return;
+        const d = new Date(date);
+        const bucket = months.find(m => m.year === d.getFullYear() && m.month === d.getMonth());
+        if (bucket) { bucket.count++; bucket.games.push(t); }
+    });
+
+    return {
+        total: titles.length,
+        completed: completed.length,
+        inProgress: getInProgressGamesCount(),
+        loggedHours,
+        loggedCount,
+        pace: paceEstimate > 0 ? paceYours / paceEstimate : null,
+        months,
+    };
+}
+
+function formatHoursShort(h) {
+    return h >= 100 ? Math.round(h).toLocaleString() : (Math.round(h * 10) / 10).toString();
+}
+
+function renderMonthlyChart(months) {
+    const W = 560, H = 200, padL = 28, padB = 26, padT = 12;
+    const plotW = W - padL, plotH = H - padB - padT;
+    const max = Math.max(1, ...months.map(m => m.count));
+    // Whole-number gridlines, at most 4 of them
+    const step = Math.max(1, Math.ceil(max / 4));
+    const top = Math.ceil(max / step) * step;
+    const slot = plotW / months.length;
+    const barW = Math.min(28, slot - 8);
+    const y = v => padT + plotH - (v / top) * plotH;
+    const monthName = m => new Date(m.year, m.month, 1).toLocaleString('en-US', { month: 'short' });
+
+    let grid = '';
+    for (let v = 0; v <= top; v += step) {
+        grid += `<line x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}" class="stats-grid${v === 0 ? ' stats-baseline' : ''}"/>`;
+        grid += `<text x="${padL - 6}" y="${y(v) + 4}" text-anchor="end" class="stats-axis">${v}</text>`;
+    }
+
+    const bars = months.map((m, i) => {
+        const cx = padL + slot * i + slot / 2;
+        const label = `<text x="${cx}" y="${H - 8}" text-anchor="middle" class="stats-axis">${monthName(m)}</text>`;
+        const tip = `${monthName(m)} ${m.year}: ${m.count} game${m.count === 1 ? '' : 's'}`;
+        // Full-height hit target, wider than the bar
+        const hit = `<rect x="${padL + slot * i}" y="${padT}" width="${slot}" height="${plotH}" class="stats-hit" data-tip="${escapeHtml(tip)}" data-games="${escapeHtml(m.games.slice(0, 5).join('\n'))}"/>`;
+        if (!m.count) return label + hit;
+        // Bar with 4px rounded top, square bottom on the baseline
+        const x = cx - barW / 2, yTop = y(m.count), yBase = y(0), r = Math.min(4, yBase - yTop);
+        const path = `M${x},${yBase} V${yTop + r} Q${x},${yTop} ${x + r},${yTop} H${x + barW - r} Q${x + barW},${yTop} ${x + barW},${yTop + r} V${yBase} Z`;
+        return `<path d="${path}" class="stats-bar"/>` + label + hit;
+    }).join('');
+
+    return `<svg viewBox="0 0 ${W} ${H}" class="stats-chart" role="img" aria-label="Games completed per month, last 12 months">${grid}${bars}</svg>`;
+}
+
+function openStats() {
+    let modal = document.getElementById('statsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'statsModal';
+        modal.className = 'up-next-modal stats-modal';
+        modal.addEventListener('click', e => { if (e.target === modal) closeStats(); });
+        document.body.appendChild(modal);
+    }
+
+    const s = computeStats();
+    const pct = s.total ? Math.round(s.completed / s.total * 100) : 0;
+    const avg = s.loggedCount ? s.loggedHours / s.loggedCount : 0;
+    let paceText = '—', paceSub = 'Log your times on completed games';
+    if (s.pace) {
+        const diff = Math.round(Math.abs(1 - s.pace) * 100);
+        paceText = `${s.pace.toFixed(2)}×`;
+        paceSub = diff < 3 ? 'Right on the estimates' : `${diff}% ${s.pace < 1 ? 'faster' : 'slower'} than estimates`;
+    }
+    const yearTotal = s.months.reduce((n, m) => n + m.count, 0);
+
+    modal.innerHTML = `
+        <div class="up-next-card stats-card" role="dialog" aria-label="Stats">
+            <button type="button" class="up-next-close" title="Close" onclick="closeStats()">✕</button>
+            <div class="up-next-heading">📊 Your Stats</div>
+            <div class="stats-tiles">
+                <div class="stats-tile">
+                    <div class="stats-value">${pct}%</div>
+                    <div class="stats-label">Library completed</div>
+                    <div class="stats-sub">${s.completed} of ${s.total} games</div>
+                </div>
+                <div class="stats-tile">
+                    <div class="stats-value">${formatHoursShort(s.loggedHours)}h</div>
+                    <div class="stats-label">Hours logged</div>
+                    <div class="stats-sub">across ${s.loggedCount} completed game${s.loggedCount === 1 ? '' : 's'}</div>
+                </div>
+                <div class="stats-tile">
+                    <div class="stats-value">${s.loggedCount ? formatHoursShort(avg) + 'h' : '—'}</div>
+                    <div class="stats-label">Avg per completed game</div>
+                    <div class="stats-sub">${s.inProgress} in progress now</div>
+                </div>
+                <div class="stats-tile">
+                    <div class="stats-value">${paceText}</div>
+                    <div class="stats-label">Your pace vs. estimates</div>
+                    <div class="stats-sub">${paceSub}</div>
+                </div>
+            </div>
+            <div class="stats-chart-title">Games completed per month <span>${yearTotal} in the last 12 months</span></div>
+            <div class="stats-chart-wrap">
+                ${renderMonthlyChart(s.months)}
+                <div class="stats-tooltip" hidden></div>
+            </div>
+            <details class="stats-table">
+                <summary>Show as table</summary>
+                <table>
+                    <thead><tr><th>Month</th><th>Completed</th></tr></thead>
+                    <tbody>${s.months.slice().reverse().map(m =>
+                        `<tr><td>${new Date(m.year, m.month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })}</td><td>${m.count}</td></tr>`).join('')}</tbody>
+                </table>
+            </details>
+        </div>`;
+
+    // Per-bar hover tooltip
+    const wrap = modal.querySelector('.stats-chart-wrap');
+    const tooltip = modal.querySelector('.stats-tooltip');
+    wrap.querySelectorAll('.stats-hit').forEach(hit => {
+        hit.addEventListener('mouseenter', () => {
+            const games = hit.dataset.games ? hit.dataset.games.split('\n') : [];
+            tooltip.innerHTML = `<strong>${escapeHtml(hit.dataset.tip)}</strong>${games.map(g => `<div>${escapeHtml(g)}</div>`).join('')}`;
+            tooltip.hidden = false;
+            hit.classList.add('active');
+            // Beside the hovered column, never on top of its bar
+            const r = hit.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+            const onRight = r.left - wr.left > wr.width / 2;
+            tooltip.style.left = onRight
+                ? `${r.left - wr.left - tooltip.offsetWidth - 6}px`
+                : `${r.right - wr.left + 6}px`;
+        });
+        hit.addEventListener('mouseleave', () => { tooltip.hidden = true; hit.classList.remove('active'); });
+    });
+
+    modal.classList.add('open');
+}
+
+function closeStats() {
+    const modal = document.getElementById('statsModal');
+    if (modal) modal.classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeStats();
+});
+
 // Quiet background re-check on page load of just the games actually being
 // played - Active Games plus anything in progress - so their achievement
 // counts are current without running the full ~550-game sweep. Throttled

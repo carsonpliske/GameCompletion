@@ -2113,3 +2113,155 @@ body.shake {
     opacity: 0.5;
     pointer-events: none;
 }
+
+/* ---- Stats dashboard (reuses the .up-next-modal overlay) ---- */
+.stats-btn {
+    background: linear-gradient(135deg, #2a475e 0%, #1b2838 100%);
+}
+
+.stats-card {
+    width: min(640px, 94vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.stats-card .up-next-heading {
+    text-align: center;
+}
+
+.stats-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stats-tile {
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.stats-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.stats-label {
+    margin-top: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #c7d5e0;
+}
+
+.stats-sub {
+    margin-top: 2px;
+    font-size: 0.72rem;
+    color: #8f98a0;
+}
+
+.stats-chart-title {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #c7d5e0;
+}
+
+.stats-chart-title span {
+    margin-left: 6px;
+    font-weight: 400;
+    color: #8f98a0;
+}
+
+.stats-chart-wrap {
+    position: relative;
+}
+
+.stats-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.stats-grid {
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1;
+}
+
+.stats-baseline {
+    stroke: rgba(255, 255, 255, 0.25);
+}
+
+.stats-axis {
+    fill: #8f98a0;
+    font-size: 11px;
+}
+
+.stats-bar {
+    fill: #27ae60;
+    pointer-events: none;
+}
+
+.stats-hit {
+    fill: transparent;
+    cursor: default;
+}
+
+.stats-hit.active {
+    fill: rgba(255, 255, 255, 0.05);
+}
+
+.stats-tooltip {
+    position: absolute;
+    top: 0;
+    min-width: 140px;
+    max-width: 220px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #0e141b;
+    border: 1px solid #2a475e;
+    color: #c7d5e0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    pointer-events: none;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.stats-tooltip strong {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 2px;
+}
+
+.stats-table {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: #c7d5e0;
+}
+
+.stats-table summary {
+    cursor: pointer;
+    color: #8f98a0;
+}
+
+.stats-table table {
+    width: 100%;
+    margin-top: 8px;
+    border-collapse: collapse;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 4px 6px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 600px) {
+    .stats-tiles {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
