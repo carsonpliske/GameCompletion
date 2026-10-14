@@ -4277,55 +4277,6 @@ console.log(`Loaded ${currentGames.length} games!`);
 const gamesWithTime = Object.values(gameDatabase).filter(game => game.timeToBeat !== null).length;
 console.log(`Games with completion time data: ${gamesWithTime}/${currentGames.length}`);
 
-// Debug function to find games without Steam images
-function findGamesWithoutImages() {
-    const gamesWithoutSteamId = currentGames.filter(gameName => !getSteamAppId(gameName));
-    console.log(`Games without Steam App IDs (${gamesWithoutSteamId.length}):`, gamesWithoutSteamId);
-
-    // Also create a copy-pasteable format for adding to steamAppIds
-    const formatted = gamesWithoutSteamId.slice(0, 20).map(name => `    "${name}": XXXX,`).join('\n');
-    console.log('Format for adding to steamAppIds:\n' + formatted);
-
-    return gamesWithoutSteamId;
-}
-
-// Debug function to check sorting
-function debugSorting() {
-    console.log('=== SORTING DEBUG ===');
-    const sampleGames = filteredGames.slice(0, 20);
-
-    sampleGames.forEach(gameName => {
-        const game = gameDatabase[gameName];
-        const parsedTime = parseFloat(game.timeToBeat);
-        console.log(`${game.title}:
-            Raw timeToBeat: ${game.timeToBeat} (type: ${typeof game.timeToBeat})
-            Parsed: ${parsedTime} (type: ${typeof parsedTime})
-            IsNaN: ${isNaN(parsedTime)}`);
-    });
-
-    // Also check a few specific problematic games
-    const problemGames = ['Portal', 'Human Fall Flat', 'Overwatch 2', 'Overwatch® 2'];
-    console.log('\n=== PROBLEM GAMES ===');
-    problemGames.forEach(gameName => {
-        if (gameDatabase[gameName]) {
-            const game = gameDatabase[gameName];
-            const parsedTime = parseFloat(game.timeToBeat);
-            console.log(`${game.title}: ${game.timeToBeat} → ${parsedTime}`);
-        } else {
-            console.log(`Game not found: ${gameName}`);
-        }
-    });
-
-    // Let's also check if there are multiple entries for Overwatch
-    console.log('\n=== SEARCHING FOR OVERWATCH ===');
-    Object.keys(gameDatabase).forEach(gameName => {
-        if (gameName.toLowerCase().includes('overwatch')) {
-            const game = gameDatabase[gameName];
-            console.log(`Found: ${gameName} → ${game.title}: ${game.timeToBeat} hours`);
-        }
-    });
-}
-
 // Function to open Steam store page for a game
 function openSteamStore(gameTitle) {
     const steamAppId = steamAppIds[gameTitle];
@@ -4335,21 +4286,6 @@ function openSteamStore(gameTitle) {
     } else {
         console.log(`No Steam app ID found for: ${gameTitle}`);
     }
-}
-
-// Add debug buttons (only in development)
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    const debugButton = document.createElement('button');
-    debugButton.textContent = 'Debug: Show Missing Images';
-    debugButton.style.cssText = 'position: fixed; top: 10px; right: 10px; z-index: 1000; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;';
-    debugButton.onclick = findGamesWithoutImages;
-    document.body.appendChild(debugButton);
-
-    const sortingButton = document.createElement('button');
-    sortingButton.textContent = 'Debug: Check Sorting';
-    sortingButton.style.cssText = 'position: fixed; top: 60px; right: 10px; z-index: 1000; padding: 10px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;';
-    sortingButton.onclick = debugSorting;
-    document.body.appendChild(sortingButton);
 }
 
 // Update floating background image highlight when a game's completion or
