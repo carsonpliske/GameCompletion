@@ -92,6 +92,18 @@ No Steam API key needed - both of these are public, unauthenticated endpoints:
   above and add it to `steamImageCdnOverrides` (also in `script.js`) rather
   than changing `steamAppIds` - the App ID must stay a plain number since it's
   also used to build the "open Steam page" link.
+- **Cover view needs portrait box art, and it often isn't at the obvious URL.**
+  The cover-view toggle (🖼️) loads `.../steam/apps/{id}/library_600x900.jpg`,
+  falling back to the wide header if that 404s. For a new game, get the real
+  filename from `https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json={"ids":[{"appid":<id>}],"context":{"language":"english","country_code":"US"},"data_request":{"include_assets":true}}`
+  (no key needed): `assets.library_capsule` joined onto
+  `https://shared.akamai.steamstatic.com/store_item_assets/` + `asset_url_format`.
+  If it's not plain `library_600x900.jpg`, add it to
+  `steamLibraryCoverOverrides` in `script.js`. If it's `portrait.png`, that's
+  Steam's auto-generated filler (header smeared vertically), not real art -
+  use a SteamGridDB 600x900 grid instead (needs the user's API key for the
+  lookup, read from `~/.steamgriddb-key`; the stored `cdn2.steamgriddb.com`
+  image URLs themselves need no key).
 - **Fuzzy name-matching can leak data between similarly-named games.**
   `hltbGameTimes`/`completionistTimes`/`steamAchievements` all fall back to
   stripping a trailing `" (YYYY)"` when looking up a game's data. If you add a

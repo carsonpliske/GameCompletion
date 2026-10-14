@@ -1691,15 +1691,123 @@ const steamImageCdnOverrides = {
     2807960: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2807960/c12d12ce3c7d217398d3fcad77427bfc9d57c570/header.jpg"
 };
 
+// Same CDN migration, but for the portrait library art used by cover view.
+// Games not listed here use the plain .../{id}/library_600x900.jpg path.
+// Found via Steam's public IStoreBrowseService/GetItems API (include_assets:
+// true) - its assets.library_capsule field gives the real filename, which
+// is sometimes hashed and sometimes not even named library_600x900. Steam
+// has no real box art for some older games - their portrait.png is just the
+// header smeared vertically - so those (and the few with no portrait art at
+// all) point at community box art from SteamGridDB instead (cdn2.steamgriddb.com,
+// picked via its API; no key needed to load the images). Keyed by steamAppIds value, so games whose
+// header comes from a local file (PEAK, Mage Arena) can still get Steam's
+// portrait art.
+const steamLibraryCoverOverrides = {
+    205930: "https://cdn2.steamgriddb.com/grid/bdffd8ee443a9507462b7015aa990494.png", // Hitman: Sniper Challenge
+    1962660: "https://cdn2.steamgriddb.com/grid/5cef43602bc7486da26ba5fbf4483f43.png", // Call of Duty®: Modern Warfare® II - Open Beta
+    407530: "https://cdn2.steamgriddb.com/grid/df3f5bc6f8359d51858bb8ffeb11fe98.png", // ARK: Survival Of The Fittest
+    15100: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/15100/bad9ce55fafbd0f01c7236c5f082d291b3f5b54e/library_capsule.jpg", // Assassin's Creed
+    277590: "https://cdn2.steamgriddb.com/grid/88c9dc3c86b55bce08d0800cd4f2ebb9.png", // Assassin's Creed Freedom Cry
+    911400: "https://cdn2.steamgriddb.com/grid/f0ce59b6bf8e03499c788c348919a196.jpg", // Assassin's Creed III Remastered
+    260210: "https://cdn2.steamgriddb.com/grid/184c5f0b07da07e0bd12e855b5fa4b57.png", // Assassin's Creed Liberation
+    201870: "https://cdn2.steamgriddb.com/grid/105fb0578a9e90c458f69bad63c38709.png", // Assassin's Creed Revelations
+    354380: "https://cdn2.steamgriddb.com/grid/38a9dbfce0500ac32fa4092cf609e572.png", // Assassin's Creed® Chronicles: China
+    359610: "https://cdn2.steamgriddb.com/grid/05761d7cd3d824ac6da56e12eb7c8c6f.png", // Assassin's Creed® Chronicles: India
+    359600: "https://cdn2.steamgriddb.com/grid/07ca1fa3752c82926902fc1e800da282.jpg", // Assassin's Creed® Chronicles: Russia
+    267490: "https://cdn2.steamgriddb.com/grid/5a360fb9a1331b4a164fefe89f36945e.jpg", // Batman™: Arkham Origins Blackgate - Deluxe Edition
+    42710: "https://cdn2.steamgriddb.com/grid/8359bc4376e89b729d92ddd9b8a53c46.png", // Call of Duty: Black Ops - Multiplayer
+    202990: "https://cdn2.steamgriddb.com/grid/12a275206395ca08bbef724366ce29e0.png", // Call of Duty: Black Ops II - Multiplayer
+    212910: "https://cdn2.steamgriddb.com/grid/4fd970babc3f432f2fc491ecea30bb61.png", // Call of Duty: Black Ops II - Zombies
+    209170: "https://cdn2.steamgriddb.com/grid/1f5fedada2eafc6fd9fbbf43f6e04498.png", // Call of Duty: Ghosts - Multiplayer
+    10190: "https://cdn2.steamgriddb.com/grid/4f4ecc161b18f07dcf2c8296fad55709.png", // Call of Duty: Modern Warfare 2 (2009) - Multiplayer
+    393080: "https://cdn2.steamgriddb.com/grid/a3116fcb0ff78581d441a3de68287e73.png", // Call of Duty: Modern Warfare Remastered - Multiplayer / Call of Duty: Modern Warfare Remastered (2017)
+    2640: "https://cdn2.steamgriddb.com/grid/f9fb7c79045fc492a18b051150c2b269.png", // Call of Duty: United Offensive
+    476620: "https://cdn2.steamgriddb.com/grid/275f6d6e9def3c623a77554df97e93be.png", // Call of Duty: WWII - Multiplayer
+    3230400: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3230400/823ba0faadb5255d6e3f91ffc80ee4641d001f83/library_capsule.jpg", // EA SPORTS Madden NFL 26
+    21090: "https://cdn2.steamgriddb.com/grid/6eaf935a9ba18155b5f0e5f74505f4f1.png", // F.E.A.R.
+    21100: "https://cdn2.steamgriddb.com/grid/bdc31e3996f71d8f34782dda5ea48511.png", // F.E.A.R. 3
+    21110: "https://cdn2.steamgriddb.com/grid/5ad1011144495f9944612cbbc193cb8f.png", // F.E.A.R.: Extraction Point
+    21120: "https://cdn2.steamgriddb.com/grid/4c37a6b2cc40bc0005dd2efeaff3d882.png", // F.E.A.R.: Perseus Mandate
+    16450: "https://cdn2.steamgriddb.com/grid/f56b0fc71e17fa72a6f8463788aae5a1.png", // F.E.A.R.2: Project Origin
+    13520: "https://cdn2.steamgriddb.com/grid/37a05c2bc9e34c4228911a726d0da702.png", // Far Cry
+    233270: "https://cdn2.steamgriddb.com/grid/84aaa84129e365590aeb86b57697edb9.png", // Far Cry® 3 Blood Dragon
+    4121170: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4121170/fc4bb0a814cedd55d33dd0ca32ce5f54864e7f3a/library_capsule.jpg", // Fears to Fathom - Scratch Creek
+    346830: "https://cdn2.steamgriddb.com/grid/cd6544b0ab90949c415ed0d775c25384.png", // FINAL FANTASY IV: THE AFTER YEARS
+    292140: "https://cdn2.steamgriddb.com/grid/2fe0b49fd9d20a994acb11f1fa72ca6e.png", // FINAL FANTASY XIII-2
+    319510: "https://cdn2.steamgriddb.com/grid/c7e30c4f80e9452d40245385c6572936.png", // Five Nights at Freddy's
+    332800: "https://cdn2.steamgriddb.com/grid/89b80e69d47933b3b13f3526d10baeb2.jpg", // Five Nights at Freddy's 2
+    354140: "https://cdn2.steamgriddb.com/grid/ee60c22e4bfe1543ac99218d9376d56f.png", // Five Nights at Freddy's 3
+    388090: "https://cdn2.steamgriddb.com/grid/12cc97842f39de60ed91cd3740d551b2.png", // Five Nights at Freddy's 4
+    506610: "https://cdn2.steamgriddb.com/grid/23dffbf33210f39533159a591bea1615.png", // Five Nights at Freddy's: Sister Location
+    3892270: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3892270/aae0d37eb09a4e20706805e0db735fbbe04ecd15/library_capsule.jpg", // Gamble With Your Friends
+    323320: "https://cdn2.steamgriddb.com/grid/bb053e19fd02a0e5a374e90a3ddf16fc.png", // Grow Home
+    426790: "https://cdn2.steamgriddb.com/grid/5782efc436ca617a069a0cbc86f5f371.jpg", // Grow Up
+    747350: "https://cdn2.steamgriddb.com/grid/3405f1800a6bc544666735613092f7aa.png", // Hellblade: Senua's Sacrifice VR Edition
+    242700: "https://cdn2.steamgriddb.com/grid/aa0952d4ab66756202e6a7dcd7616bda.png", // Injustice: Gods Among Us Ultimate Edition
+    3720460: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3720460/8b7a043dd556f9151e155111ec71020614dfcc34/library_capsule.jpg", // KEEP GAMBLING
+    345350: "https://cdn2.steamgriddb.com/grid/0ac6bcae397df2f383a0ea9da5e86718.png", // LIGHTNING RETURNS: FINAL FANTASY XIII
+    562810: "https://cdn2.steamgriddb.com/grid/3acc60912ab5edf5da1810c51c8ccb21.png", // Monopoly Plus
+    104600: "https://cdn2.steamgriddb.com/grid/1c4196d0ff7fe4e94bdca98fb251bc25.png", // Portal 2 - The Final Hours
+    19980: "https://cdn2.steamgriddb.com/grid/003b36afc53d4e078a9df02e0e43fb28.png", // Prince of Persia
+    33320: "https://cdn2.steamgriddb.com/grid/997faddb1dbf1556a1b883b8a67fbfff.png", // Prince of Persia: The Forgotten Sands
+    13600: "https://cdn2.steamgriddb.com/grid/6a8cfab2aa11fbb342063df25c16a5f1.png", // Prince of Persia: The Sands of Time
+    13530: "https://cdn2.steamgriddb.com/grid/abae7d98a0ce038be2705fc36f5de8d9.png", // Prince of Persia: The Two Thrones
+    13500: "https://cdn2.steamgriddb.com/grid/0e81202a194c3198d45cceb0edec2ff0.jpg", // Prince of Persia: Warrior Within
+    10150: "https://cdn2.steamgriddb.com/grid/b22f88e3aaffe96b7f562526237db167.png", // Prototype
+    115320: "https://cdn2.steamgriddb.com/grid/ce6b01e4cd4166124283f11b1a09fe8a.png", // PROTOTYPE 2
+    242550: "https://cdn2.steamgriddb.com/grid/aa01df8e6c2526116e1a7eab3f634de8.png", // Rayman Legends
+    207490: "https://cdn2.steamgriddb.com/grid/cb1a716a70ad58a2f02792dcc8db2039.png", // Rayman Origins
+    15080: "https://cdn2.steamgriddb.com/grid/3e358c308368853e1ee163edf300472a.png", // Rayman: Raving Rabbids
+    4249100: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249100/1319bc2a43e995534ffde9327638a029386118e1/library_capsule.jpg", // Resident Evil (1996)
+    4249110: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249110/22f4a319100953ec0dbf3c2bb2f5d654664fa5ed/library_capsule.jpg", // Resident Evil 2 (1998)
+    4249120: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4249120/d5cc422401973c1bc203a4448033f2016aec03c1/library_capsule.jpg", // Resident Evil 3 Nemesis (1999)
+    294280: "https://cdn2.steamgriddb.com/grid/c1b73978aac1d2d811ab6cf2ebe0d4e2.jpg", // Scooby-Doo! & Looney Tunes Cartoon Universe: Adventure
+    218680: "https://cdn2.steamgriddb.com/grid/b82d949cf4a38f15b1297f97b82d0a77.jpg", // Scribblenauts Unlimited
+    249870: "https://cdn2.steamgriddb.com/grid/2c72d354d8bee2a9a345689ec0abd978.png", // Scribblenauts Unmasked
+    1058020: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1058020/5aed9c0190a7da9e906595fb4a860615c2b1d8ae/library_600x900.jpg", // STAR WARS Battlefront (Classic, 2004)
+    4483120: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4483120/d744cc4ba22dde54599786b5eebd3d766d89a663/library_capsule.jpg", // Tales Beyond The Tomb - No Witnesses
+    3860920: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3860920/1ff85f12e66a08068a2c36c8e36cc7bf13f3c47a/library_capsule.jpg", // Tales Beyond The Tomb - Route 86
+    3655960: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3655960/1e7b43d1268cb6910ef784b62cd885ecfd54be55/library_capsule.jpg", // Tales Beyond The Tomb - White Silence
+    21800: "https://cdn2.steamgriddb.com/grid/550473c18fb7b4e9ed2f08cecabdbc15.png", // Tom Clancy's EndWar
+    15300: "https://cdn2.steamgriddb.com/grid/82bc092d3037e923b596821ff761e1a4.png", // Tom Clancy's Ghost Recon
+    212630: "https://cdn2.steamgriddb.com/grid/b651d34250c1ed8cc010de42406eec68.png", // Tom Clancy's Ghost Recon Future Soldier
+    13620: "https://cdn2.steamgriddb.com/grid/99edc3daf630586eae1fa7529e68bb78.png", // Tom Clancy's Ghost Recon: Desert Siege
+    13630: "https://cdn2.steamgriddb.com/grid/52836c76fd8dedb1337663e14148fbf8.png", // Tom Clancy's Ghost Recon: Island Thunder
+    19810: "https://cdn2.steamgriddb.com/grid/0ef007c827d338fcef4c44b1dee6bb76.png", // Tom Clancy's Rainbow Six 3: Athena Sword
+    19830: "https://cdn2.steamgriddb.com/grid/fef4f0c339f100fad1eafe9b89e04b28.png", // Tom Clancy's Rainbow Six 3: Gold Edition
+    15000: "https://cdn2.steamgriddb.com/grid/81f00b09baf20f2e5d82e02bb5fdc60f.png", // Tom Clancy's Rainbow Six: Lockdown
+    13540: "https://cdn2.steamgriddb.com/grid/6385db535c50d5bfe89bee1e5dd7cedb.png", // Tom Clancy's Rainbow Six: Vegas
+    15120: "https://cdn2.steamgriddb.com/grid/1bebc4f67cbeda086e5ac2d8d0eea72f.png", // Tom Clancy's Rainbow Six: Vegas 2
+    13560: "https://cdn2.steamgriddb.com/grid/f2aa417ab5eec093fb1699b3c789caff.png", // Tom Clancy's Splinter Cell
+    235600: "https://cdn2.steamgriddb.com/grid/5dffa05994b7c919d53dd8423441a5fc.png", // Tom Clancy's Splinter Cell Blacklist
+    13570: "https://cdn2.steamgriddb.com/grid/923ccbcec867ebc5588386df7c370c55.png", // Tom Clancy's Splinter Cell: Chaos Theory
+    33229: "https://cdn2.steamgriddb.com/grid/6829f04c08f76d864d84dfad889698f2.png", // Tom Clancy's Splinter Cell: Conviction
+    13580: "https://cdn2.steamgriddb.com/grid/0a2344aa9cd83016f0066d8f316709f7.jpg", // Tom Clancy's Splinter Cell: Double Agent
+    3929740: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3929740/6b3e3a4790b5871a93106fbc79da83c35b73c4f6/library_capsule.jpg", // Tom Clancy's Splinter Cell: Pandora Tomorrow
+    220160: "https://cdn2.steamgriddb.com/grid/4afab2bc5757a92efb5266c7ea0365d1.png", // Trials Evolution Gold Edition
+    245490: "https://cdn2.steamgriddb.com/grid/67c68199f158340828fc50c3f66c99c5.png", // Trials Fusion
+    243470: "https://cdn2.steamgriddb.com/grid/df827da31d664707840bc6c221f22d72.png", // Watch_Dogs
+    485380: "https://cdn2.steamgriddb.com/grid/4385a0335a5daa56f694a86f9e3e599e.png", // Welcome to the Game
+    4092670: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4092670/9e0ea87bf542c76cbf070b878cdc4907a6b78120/library_capsule.jpg", // Within of Static - Ashburg Rental
+    4319350: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4319350/dd7127fa31bf949d944764c9ca465a7ed7ac7cdd/library_capsule.jpg", // Within of Static - Northgate Mall
+    9040: "https://cdn2.steamgriddb.com/grid/3aaeb67d892ba6bd324d8553ebcbc1ec.png", // Wolfenstein: Enemy Territory
+    "peak.jpg": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/480bd879ac737921bfa2529a6fea15961267ad21/library_600x900.jpg", // PEAK (App ID 3527290)
+    "mageArena.jpg": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3716600/aa52de47d23d5881e1dd71cb523bdacaecfb217c/library_600x900.jpg" // Mage Arena (App ID 3716600)
+};
+
 function getSteamImageUrl(appId, type = 'header') {
     if (!appId) return null;
+
+    if (type === 'library' && steamLibraryCoverOverrides[appId]) {
+        return steamLibraryCoverOverrides[appId];
+    }
 
     // If it's a local file (ends with .jpg, .png, etc.), return it as-is
     if (typeof appId === 'string' && appId.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
         return appId;
     }
 
-    if (steamImageCdnOverrides[appId]) {
+    if (type === 'header' && steamImageCdnOverrides[appId]) {
         return steamImageCdnOverrides[appId];
     }
 
@@ -2619,9 +2727,18 @@ function renderGames() {
         const fallbackUrl = getTheGamesDBImageUrl(game.title);
         const iconFallback = getGameIcon(game.title);
 
-        const imageHtml = steamUrl
-            ? `<img src="${steamUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${fallbackUrl}'; this.onerror=function(){this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>';}">`
-            : `<img src="${fallbackUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>'">`;
+        let imageHtml;
+        if (coverView) {
+            // Portrait library art first, then the wide header, then
+            // TheGamesDB, then the emoji placeholder - see handleCoverImageError.
+            const coverUrl = getSteamImageUrl(game.steamAppId, 'library');
+            const fallbacks = [steamUrl, fallbackUrl].filter(u => u && u !== coverUrl).join('|');
+            imageHtml = `<img src="${coverUrl || fallbackUrl}" alt="${game.title}" loading="lazy" decoding="async" data-fallbacks="${fallbacks}" data-icon="${iconFallback}" onload="handleCoverImageLoad(this)" onerror="handleCoverImageError(this)">`;
+        } else {
+            imageHtml = steamUrl
+                ? `<img src="${steamUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='${fallbackUrl}'; this.onerror=function(){this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>';}">`
+                : `<img src="${fallbackUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>'">`;
+        }
 
         const steamAppId = getSteamAppId(game.title);
         const steamStoreUrl = steamAppId ? `https://store.steampowered.com/app/${steamAppId}` : '#';
@@ -2728,10 +2845,99 @@ function renderGames() {
             </div>
         `;
 
-
-        gamesListContainer.appendChild(gameCard);
+        if (coverView) {
+            // The glow has to spill outside the card, which .game-card's
+            // overflow:hidden would clip - so the tile wraps both, and the
+            // tilt transform goes on the tile so card and glow move together.
+            const tile = document.createElement('div');
+            tile.className = 'game-tile';
+            tile.innerHTML = '<div class="game-glow"></div><div class="game-glare"></div>';
+            tile.insertBefore(gameCard, tile.lastChild);
+            gamesListContainer.appendChild(tile);
+        } else {
+            gamesListContainer.appendChild(gameCard);
+        }
     });
 }
+
+// ---- Cover view (Steam-library-style wall) ----
+// Opt-in alternative layout; the classic card layout is untouched and is
+// still the default. Toggled by #viewModeBtn, remembered in localStorage.
+let coverView = localStorage.getItem('gameViewMode') === 'covers';
+
+function applyViewMode() {
+    gamesListContainer.classList.toggle('cover-view', coverView);
+    const btn = document.getElementById('viewModeBtn');
+    if (btn) {
+        btn.textContent = coverView ? '☰' : '🖼️';
+        btn.title = coverView ? 'Switch to classic card view' : 'Switch to cover view';
+    }
+}
+
+function toggleViewMode() {
+    coverView = !coverView;
+    localStorage.setItem('gameViewMode', coverView ? 'covers' : 'classic');
+    applyViewMode();
+    renderGames();
+}
+
+// Glow source is the image that actually loaded (after any fallbacks), so
+// the hue always matches what's on screen. Landscape fallbacks (header art
+// for games with no portrait cover) get letterboxed over a blurred copy
+// instead of being cropped to a sliver.
+function handleCoverImageLoad(img) {
+    const tile = img.closest('.game-tile');
+    if (tile) tile.style.setProperty('--cover', `url("${img.currentSrc || img.src}")`);
+    const container = img.closest('.game-image');
+    if (container) {
+        const landscape = img.naturalWidth > img.naturalHeight;
+        container.classList.toggle('cover-landscape', landscape);
+        if (landscape) container.style.setProperty('--cover', `url("${img.currentSrc || img.src}")`);
+    }
+}
+
+function handleCoverImageError(img) {
+    const fallbacks = (img.dataset.fallbacks || '').split('|').filter(Boolean);
+    if (fallbacks.length) {
+        img.dataset.fallbacks = fallbacks.slice(1).join('|');
+        img.src = fallbacks[0];
+        return;
+    }
+    img.onerror = null;
+    img.parentElement.innerHTML = `<div class="game-placeholder">${img.dataset.icon || ''}</div>`;
+}
+
+// Tilt: the tile leans away from the cursor's corner (like pressing on it),
+// with a soft glare following the cursor. One delegated listener for the
+// whole grid rather than one per tile, throttled to animation frames.
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let tiltFrame = null;
+
+gamesListContainer.addEventListener('mousemove', (event) => {
+    if (!coverView || prefersReducedMotion) return;
+    const tile = event.target.closest('.game-tile');
+    if (!tile) return;
+    const { clientX, clientY } = event;
+    if (tiltFrame) cancelAnimationFrame(tiltFrame);
+    tiltFrame = requestAnimationFrame(() => {
+        const rect = tile.getBoundingClientRect();
+        const x = (clientX - rect.left) / rect.width;   // 0..1
+        const y = (clientY - rect.top) / rect.height;   // 0..1
+        const maxTilt = 12;
+        tile.style.setProperty('--rx', `${(y - 0.5) * maxTilt}deg`);
+        tile.style.setProperty('--ry', `${(0.5 - x) * maxTilt}deg`);
+        tile.style.setProperty('--gx', `${x * 100}%`);
+        tile.style.setProperty('--gy', `${y * 100}%`);
+    });
+});
+
+gamesListContainer.addEventListener('mouseout', (event) => {
+    const tile = event.target.closest('.game-tile');
+    if (!tile || tile.contains(event.relatedTarget)) return;
+    if (tiltFrame) cancelAnimationFrame(tiltFrame);
+    tile.style.removeProperty('--rx');
+    tile.style.removeProperty('--ry');
+});
 
 function filterGames() {
     const searchTerm = searchInput.value.toLowerCase();
@@ -3907,6 +4113,7 @@ if (inProgressStatToggle) {
 sortSelect.value = 'completionistTime';
 sortDirection = 'asc';
 updateSortDirectionArrow();
+applyViewMode();
 filterGames();
 
 console.log('About to call updateStats and renderGames...');
