@@ -2846,3 +2846,16 @@ body.shake {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* Wide screens (1440p and up): bigger covers, still 4 per row. 2280px is
+   where a 1440px container still clears both sidebars (left ends at
+   360px, right starts 400px from the edge) with a little breathing room. */
+@media (min-width: 2280px) {
+    .container {
+        max-width: 1440px;
+    }
+
+    .games-list.cover-view {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
