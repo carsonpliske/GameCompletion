@@ -2911,18 +2911,18 @@ function renderGames() {
                         <span class="cover-stat-value ${game.completionistTime ? 'time-completionist' : 'time-unknown'}">${formatCompactTime(game.completionistTime)}</span>
                         <span class="cover-stat-label">100%</span>
                     </div>
-                    <div class="cover-stat" title="Release Year">
-                        <span class="cover-stat-value ${game.releaseYear ? 'stat-year' : 'time-unknown'}">${game.releaseYear || '—'}</span>
-                        <span class="cover-stat-label">Year</span>
-                    </div>
                     ${isCompleted ? `
                     <div class="cover-stat cover-stat-mine"
                          onclick="editCustomTime(event, '${escapedTitle}', '${customTime || ''}')"
                          title="${customTime ? 'Your completion time - click to edit' : 'Click to add your completion time'}">
                         <span class="cover-stat-value time-custom">${customTime ? formatCompactTime(customTime) : '+'}</span>
-                        <span class="cover-stat-label">Mine</span>
+                        <span class="cover-stat-label">My Time</span>
                     </div>
                     ` : ''}
+                    <div class="cover-stat" title="Release Year">
+                        <span class="cover-stat-value ${game.releaseYear ? 'stat-year' : 'time-unknown'}">${game.releaseYear || '—'}</span>
+                        <span class="cover-stat-label">Year</span>
+                    </div>
                 </div>
                 ` : `
                 <div class="game-stats">
