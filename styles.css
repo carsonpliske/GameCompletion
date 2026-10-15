@@ -1885,9 +1885,21 @@ body.shake {
     background: rgba(0, 0, 0, 0.65);
 }
 
+/* Laid over the bottom of the cover rather than below it, so completed
+   cards are the same height as the rest */
 .cover-view .completion-date {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
     width: 100%;
     text-align: center;
+    background: rgba(20, 70, 40, 0.85);
+}
+
+.cover-view .completion-date:hover {
+    background: rgba(25, 95, 52, 0.95);
 }
 
 /* Cover view shows achievement progress as a ring on the cover instead of
@@ -1931,39 +1943,157 @@ body.shake {
     font-weight: 800;
 }
 
+/* The info panel continues the cover: a blurred copy of the cover's lower
+   half sits behind the text, under a dark wash so it stays readable.
+   --cover is set on the tile by handleCoverImageLoad; until then the card
+   color shows. isolation keeps the z-index:-1 backdrop inside the panel. */
 .cover-view .game-content {
-    padding: 12px 14px 10px;
+    padding: 12px 14px 12px;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.cover-view .game-content::before {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    z-index: -1;
+    background:
+        linear-gradient(180deg, rgba(10, 14, 20, 0.5) 0%, rgba(10, 14, 20, 0.85) 100%),
+        var(--cover, none) center bottom / cover no-repeat;
+    filter: blur(18px) saturate(1.3);
+}
+
+/* Fade the cover's last few pixels into the panel so there's no seam.
+   On the link, not .game-image - its ::before/::after are taken by the
+   landscape backdrop and the COMPLETED ribbon. */
+.cover-view .game-image-link {
+    position: relative;
+}
+
+.cover-view .game-image-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    height: 22%;
+    background: linear-gradient(180deg, transparent, rgba(10, 14, 20, 0.55));
+    pointer-events: none;
 }
 
 .cover-view .game-header {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     gap: 8px;
 }
 
 .cover-view .game-header .game-title {
-    font-size: 1rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
     margin-right: 0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    /* Always exactly two lines tall (clamped with "…", full name in the
+       tooltip) so every panel in the wall is the same height */
+    height: 2.6em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
 }
 
-.cover-view .stat-row {
-    margin-bottom: 4px;
+/* Three-up readout: big bold value over a small caps label */
+/* 3 columns, or 4 on completed games (the gold "Mine" column) */
+.cover-stats {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    margin-top: auto;
+    padding: 8px 0;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.28);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
-.cover-view .stat-label,
-.cover-view .stat-time,
-.cover-view .stat-year {
-    font-size: 0.82rem;
+.cover-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
 }
 
-.cover-view .custom-time-input {
-    width: 72px;
-    padding: 3px 8px;
-    font-size: 0.82rem;
+.cover-stat + .cover-stat {
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cover-stat-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    /* Fixed (not em) so the smaller 4-column numbers keep the same height */
+    line-height: 1.2rem;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.cover-stat-value small {
+    margin-left: 1px;
+    font-size: 0.7em;
+    font-weight: 700;
+    opacity: 0.8;
+}
+
+/* Brighter takes on the classic colors - they sit on a darker backdrop */
+.cover-stat-value.time-short { color: #4ee38a; }
+.cover-stat-value.time-medium { color: #ffb84d; }
+.cover-stat-value.time-long { color: #ff6b5b; }
+.cover-stat-value.time-unknown { color: rgba(255, 255, 255, 0.35); }
+.cover-stat-value.time-completionist { color: #c08cff; }
+.cover-stat-value.stat-year { color: #6cc4ff; }
+
+.cover-stat-label {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+/* Completed games: your own time as a gold 4th column, click to edit */
+.cover-stat-mine {
+    margin: -8px 0;
+    padding: 8px 0;
+    border-radius: 0 8px 8px 0;
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.16), rgba(255, 215, 0, 0.05));
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.cover-stat-mine:hover {
+    background: linear-gradient(180deg, rgba(255, 215, 0, 0.28), rgba(255, 215, 0, 0.1));
+}
+
+.cover-stat-mine .cover-stat-label {
+    color: #f5d77a;
+}
+
+.cover-stats:has(.cover-stat-mine) .cover-stat-value {
+    font-size: 1.05rem;
 }
 
 @media (max-width: 768px) {
     .games-list.cover-view {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cover-stat-value {
+        font-size: 1rem;
+    }
+
+    .cover-stat-label {
+        font-size: 0.55rem;
+        letter-spacing: 0.6px;
     }
 }
 

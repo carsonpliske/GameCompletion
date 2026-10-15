@@ -2739,6 +2739,13 @@ function formatTime(hours) {
 }
 
 
+// Cover view's stat readout: big number, small unit ("9.5h", "30m")
+function formatCompactTime(hours) {
+    if (!hours) return '—';
+    if (hours < 1) return `${Math.round(hours * 60)}<small>m</small>`;
+    return `${hours}<small>h</small>`;
+}
+
 function formatTimeWithLabel(game) {
     const hltbTime = game.hltbTime;
     const manualTime = manualGameTimes[game.title];
@@ -2811,6 +2818,18 @@ function renderGames() {
                 : `<img src="${fallbackUrl}" alt="${game.title}" loading="lazy" decoding="async" onerror="this.parentElement.innerHTML='<div class=\\'game-placeholder\\'>${iconFallback}</div>'">`;
         }
 
+        const escapedTitle = game.title.replace(/'/g, "\\'");
+        const customTime = isCompleted ? getGameCompletionData(game.title).customTime : null;
+        const customTimeInputHtml = `
+            <input type="number"
+                   step="0.5"
+                   min="0"
+                   placeholder="-- hours"
+                   class="custom-time-input"
+                   value=""
+                   onchange="updateCustomTime('${escapedTitle}', this.value)"
+                   onblur="updateCustomTime('${escapedTitle}', this.value)">`;
+
         const steamAppId = getSteamAppId(game.title);
         const steamStoreUrl = steamAppId ? `https://store.steampowered.com/app/${steamAppId}` : '#';
 
@@ -2863,7 +2882,7 @@ function renderGames() {
             </div>
             <div class="game-content">
                 <div class="game-header">
-                    <div class="game-title">${game.title}</div>
+                    <div class="game-title" title="${game.title}">${game.title}</div>
                     ${gameNote ? `<span class="note-indicator" title="${escapeHtml(gameNote)}">📝</span>` : ''}
                     <div class="completion-checkbox">
                         <input type="checkbox" id="complete-${gameId}" ${isCompleted ? 'checked' : ''}
@@ -2882,6 +2901,30 @@ function renderGames() {
                         </div>
                     ` : ''}
                 </div>
+                ${coverView ? `
+                <div class="cover-stats">
+                    <div class="cover-stat" title="Main Story: ${formatTimeWithLabel(game)}">
+                        <span class="cover-stat-value time-${timeCategory}">${formatCompactTime(game.hltbTime || manualGameTimes[game.title])}</span>
+                        <span class="cover-stat-label">Story</span>
+                    </div>
+                    <div class="cover-stat" title="100% Complete: ${formatTime(game.completionistTime)}">
+                        <span class="cover-stat-value ${game.completionistTime ? 'time-completionist' : 'time-unknown'}">${formatCompactTime(game.completionistTime)}</span>
+                        <span class="cover-stat-label">100%</span>
+                    </div>
+                    <div class="cover-stat" title="Release Year">
+                        <span class="cover-stat-value ${game.releaseYear ? 'stat-year' : 'time-unknown'}">${game.releaseYear || '—'}</span>
+                        <span class="cover-stat-label">Year</span>
+                    </div>
+                    ${isCompleted ? `
+                    <div class="cover-stat cover-stat-mine"
+                         onclick="editCustomTime(event, '${escapedTitle}', '${customTime || ''}')"
+                         title="${customTime ? 'Your completion time - click to edit' : 'Click to add your completion time'}">
+                        <span class="cover-stat-value time-custom">${customTime ? formatCompactTime(customTime) : '+'}</span>
+                        <span class="cover-stat-label">Mine</span>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : `
                 <div class="game-stats">
                     <div class="stat-row">
                         <span class="stat-label">Main Story</span>
@@ -2902,26 +2945,18 @@ function renderGames() {
                     ${isCompleted ? `
                     <div class="stat-row custom-time-row">
                         <span class="stat-label">My Time To Complete</span>
-                        ${getGameCompletionData(game.title).customTime ? `
+                        ${customTime ? `
                             <span class="stat-time time-custom"
-                                  onclick="editCustomTime(event, '${game.title.replace(/'/g, "\\'")}', '${getGameCompletionData(game.title).customTime}')"
+                                  onclick="editCustomTime(event, '${escapedTitle}', '${customTime}')"
                                   title="Click to edit your completion time"
                                   style="cursor: pointer;">
-                                ${formatTime(getGameCompletionData(game.title).customTime)}
+                                ${formatTime(customTime)}
                             </span>
-                        ` : `
-                            <input type="number"
-                                   step="0.5"
-                                   min="0"
-                                   placeholder="-- hours"
-                                   class="custom-time-input"
-                                   value=""
-                                   onchange="updateCustomTime('${game.title.replace(/'/g, "\\'")}', this.value)"
-                                   onblur="updateCustomTime('${game.title.replace(/'/g, "\\'")}', this.value)">
-                        `}
+                        ` : customTimeInputHtml}
                     </div>
                     ` : ''}
                 </div>
+                `}
             </div>
         `;
 
